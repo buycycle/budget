@@ -14,7 +14,7 @@
 ## Next steps
 
 * Make model run for one country on a EC2 cluster
-* automize data ingestion and report writing
+* automize data ingestion, output and report writing
 * Vest code and hyperparameters
 
 
@@ -42,8 +42,8 @@ You can see respective names in the code:
 ## Google Drive
 - An ad-hoc review (working file) of MMM I did a few weeks ago with potential improvements [here](https://docs.google.com/spreadsheets/d/1mX1jJwlDOWa-unirtTVQLzWKKvJfjwda51koO2ZPeJU/edit?gid=3D0#gid=3D0).
 - MMM output I received for FR and DE [here](https://drive.google.com/drive/folders/1ExB7ryRB2V0PCBHHvt6R8CaoXcEWx8xO?usp=3Dsharing).
-## Attachment
-- Basic notebook I did to plot some relationships in the MMM input file that Koko Sorger used to build the recommendation. It was just to understand if the model output "makes sense" compared to descriptive data.
+## Analysis
+- Basic notebook from Fethu with some relationships in the MMM input file that Koko used to build the recommendation. It was just to understand if the model output "makes sense" compared to descriptive data.
 ## Business Process
 - Simon can tell you more about it than me.
 - At the moment there are two things that help optimization:
