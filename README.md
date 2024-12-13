@@ -5,11 +5,17 @@
 2. **Automation and Scalability**:
    - **Goal**: Transition the current locally run model, which requires manual steps, into a fully automated pipeline.
 3. **Model Enhancement**:
-   - **Goal**: Improve the performance of the MMM by incorporating additional variables and features, seasonality, bike events etc.
+   - **Goal**: Improve the performance of the MMM by incorporating additional variables and features, seasonality, bike events, run tests.
 4. **Optimization Layer**:
    - **Goal**: Implement a dual-level optimization strategy to enhance budget allocation efficiency.
    - **MMM Level Optimization**: Optimize budget allocation between countries and channels on a monthly basis, ensuring strategic alignment and resource distribution.
    - **Campaign-Specific Optimization**: Fine-tune the budget for specific campaigns on a weekly basis, allowing for agile adjustments and maximized campaign effectiveness.
+
+## Application
+
+1. Optimize budgets
+2. Run scenarios
+3. Data informed target setting
 
 ## Next steps
 
