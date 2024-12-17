@@ -21,7 +21,12 @@
 
 * Make model run for one country on a EC2 cluster
 * automize data ingestion, output and report writing
+    * Missing in DB
+   "TV_ad_spend", "google_ads_DG_brand",	"google_ads_DG_supply",	"google_ads_DG_demand","YT_Flobikes
 * Vest code and hyperparameters
+    * cross validation supported
+    * enable output
+    * model selection seems to be a craft
 
 
 
