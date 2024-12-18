@@ -1,1 +1,1 @@
-install.packages(c("reticulate", "Robyn", "RobynLearn","DBI", "dplyr","dbplyr","odbc"))
+install.packages(c("reticulate", "Robyn", "DBI", "dplyr","dbplyr","odbc"), repos = 'http://cran.us.r-project.org')

@@ -10,7 +10,7 @@ setup_env:
 # Set up R environment
 setup_r:
 	@echo "Setting up R environment..."
-	@conda run -n $(ENV_NAME) Rscript requirements_R
+	@conda run -n $(ENV_NAME) Rscript requirements_R.R
 # Set up Python environment
 setup_python:
 	@echo "Setting up Python environment..."
