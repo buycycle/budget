@@ -1,6 +1,6 @@
 ENV_NAME = budget
 PYTHON_VERSION = 3.9
-R_VERSION = 4.4.2  # Specify the R version you want to use
+R_VERSION = 4.2.0  # Specify the R version you want to use
 # Default target
 setup: setup_env setup_r setup_python
 # Set up conda environment with Python and R
