@@ -18,11 +18,23 @@
 3. Data informed target setting
 
 ## Next steps
-
+* lets do a weekly
+* first start with country region
+* use desired uploads as bridge to campaine level optimization
+    * then in which country to achieve which uploads in country
+    * bridge upload in germany GMV effect in Italy
+    * uploads pro country, in which country more uploads, this as goal, how to achieve
+    * bridge budget optimazation
+    * check which uploads
 * Make model run for one country on a EC2 cluster
+* output is monthly
+    * Fethu makes user
+    either run on management region or campany
 * automize data ingestion, output and report writing
     * Missing in DB
-   "TV_ad_spend", "google_ads_DG_brand",	"google_ads_DG_supply",	"google_ads_DG_demand","YT_Flobikes
+    * ad spent campainge in language region
+    * tell him what is missing
+    * "TV_ad_spend", "google_ads_DG_brand",	"google_ads_DG_supply",	"google_ads_DG_demand","YT_Flobikes
 * Vest code and hyperparameters
     * cross validation supported
     * enable output
