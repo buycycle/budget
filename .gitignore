@@ -1,0 +1,8 @@
+# config
+config/config.ini
+
+# data folder
+data/*
+
+.RData
+.Rhistory
