@@ -44,7 +44,7 @@ df <- tibble(
   organic_google = runif(mock_length, 30, 150),
 )
 
-inputcollect <- robyn_inputs(
+InputCollect <- robyn_inputs(
   dt_input = df,
   dt_holidays = dt_prophet_holidays,
 
@@ -67,8 +67,25 @@ inputcollect <- robyn_inputs(
   window_end = "2024-02-05",
   adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
+hyper_names_list <- hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
+# Print the hyperparameter names to verify
+print(hyper_names_list)
+# Define mock hyperparameters based on the generated names
+hyperparameters <- list(
+  google_ads_brand_spend_alphas = c(0.5, 3),
+  google_ads_brand_spend_gammas = c(0.3, 1),
+  google_ads_brand_spend_shapes = c(0.0001, 10),  # For Weibull PDF
+  google_ads_brand_spend_scales = c(0, 0.1),      # For Weibull PDF
+  organic_google_alphas = c(0.5, 3),
+  organic_google_gammas = c(0.3, 1),
+  organic_google_shapes = c(0.0001, 10),          # For Weibull PDF
+  organic_google_scales = c(0, 0.1),              # For Weibull PDF
+  train_size = c(0.5, 0.8)
+)
+InputCollect <- robyn_inputs(InputCollect = InputCollect, hyperparameters = hyperparameters)
+
 OutputCollect <- robyn_run(
-  InputCollect = inputcollect,
+  InputCollect = InputCollect,
   cores = 4, # Number of CPU cores to use
   iterations = 2000, # Number of iterations for the model
   trials = 5 # Number of trials for hyperparameter optimization
