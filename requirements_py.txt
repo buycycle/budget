@@ -1,2 +1,9 @@
+numpy==1.24.2
+pymysql==1.0.3
+pandas==2.0.0
+configparser==5.3.0
+sqlalchemy==1.4.49
+snowflake-sqlalchemy==1.5.0
+
+git+https://gitlab.com/rauner/buycycle.git@main#egg=buycycle
 nevergrad
-numpy

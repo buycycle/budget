@@ -6,7 +6,7 @@ setup: setup_env setup_r setup_python
 # Set up conda environment with Python and R
 setup_env:
 	@echo "Creating conda environment with Python and R..."
-	@conda create --name $(ENV_NAME) python=$(PYTHON_VERSION) r-base=$(R_VERSION) -y
+	@conda create --name $(ENV_NAME) python=$(PYTHON_VERSION)
 # Set up R environment
 setup_r:
 	@echo "Setting up R environment..."
