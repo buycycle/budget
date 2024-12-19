@@ -11,7 +11,6 @@
 ## Install the dev version from GitHub
 # install.packages("remotes") # Install remotes first if you haven't already
 # remotes::install_github("facebookexperimental/Robyn/R")
-use_condaenv("budget")
 library(Robyn)
 library(RobynLearn)
 
@@ -19,22 +18,11 @@ library(RobynLearn)
 
 # Load the reticulate package
 library(reticulate)
-# Get the current Python configuration
-py_config <- py_config()
-# Extract the current Python path
-current_python_path <- py_config$python
-# Set the RETICULATE_PYTHON environment variable to the current Python path
-Sys.setenv(RETICULATE_PYTHON = current_python_path)
-# Print the current Python path for verification
-cat("Current Python path set for reticulate:", current_python_path, "\n")
-py_config()
 
 
 ################################
 
 #France Data Frame
-df<- read_sheet("https://docs.google.com/spreadsheets/d/1FBCa-nbWQMa2mgomItEYgQxCLW3iDBI6lS_z-ufL39c/edit?gid=0#gid=0")
-head(df)
 ##last data frame used: MMM_robyn
 
 ################################################
