@@ -67,4 +67,14 @@ inputcollect <- robyn_inputs(
   window_end = "2024-02-05",
   adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
+OutputCollect <- robyn_run(
+  InputCollect = inputcollect,
+  cores = 4, # Number of CPU cores to use
+  iterations = 2000, # Number of iterations for the model
+  trials = 5 # Number of trials for hyperparameter optimization
+)
+# Check the results
+print(OutputCollect)
+# Plot the results
+robyn_plot(OutputCollect)
 
