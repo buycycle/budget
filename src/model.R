@@ -32,32 +32,33 @@ library(dplyr)
 data_path <- "data/data.csv"
 df <- read.csv(data_path)
 
+df$date = as.Date(df$date,  format = "%Y/%m/%d")
+df <- df[order(df$date),]
+df <- df[!is.na(df$date) & is.finite(df$date), ]
+
+
 country_code <- "FR"
-df_filtered <- df %>% filter(country == country_code)
+df_filtered <- df %>% filter(country == country_code) %>% select(-country, -management_region)
 
-# Determine the minimum and maximum dates
-window_start <- min(df_filtered$date, na.rm = TRUE)
-window_end <- max(df_filtered$date, na.rm = TRUE)
-
+abs.Date <- function(x){x}
 
 inputcollect <- robyn_inputs(
   dt_input = df_filtered,
   dt_holidays = dt_prophet_holidays,
 
-  date_var = "date", # date format must be "2020-01-01"
   dep_var = "gmv", # there should be only one dependent variable
   dep_var_type = "revenue", # "revenue" (roi) or "conversion" (cpa)
 
   prophet_vars = c("trend","season", "weekday"),  #"trend","season", "weekday" & "holiday"
   #prophet_country = "de", # input one country. dt_prophet_holidays includes 59 countries by default
 
-  context_vars = c("uploads_private", "uploads_commercial", "crossborder_sales", "n_distinct_searches", "app_installs", "android_installs", "apple_installs", "uploads_total", "cum_private_uploads14day", "cum_commercial_uploads14day", "avg_buycycle_fee", "discount_amt", "n_searches","newsletter_daily_sessions"),
+  context_vars = c("uploads_private", "uploads_commercial", "crossborder_sales", "n_distinct_searches", "app_installs", "android_installs", "apple_installs", "uploads_total", "cum_private_uploads14day", "cum_commercial_uploads14day", "avg_buycycle_fee", "discount_amt", "n_searches","newsletter_daily_sessions","tv_is_on"),
   paid_media_spends = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "ga_supply_pmax_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "ga_app_spend", "youtube_spend", "google_ads_dg"),
   paid_media_vars = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "ga_supply_pmax_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "ga_app_spend", "youtube_spend", "google_ads_dg"),
-  organic_vars = c("organic_google", "blog_traffic", "referral")
-  #factor_vars = c("m_tdf"), # force variables in context_vars or organic_vars to be categorical
-  window_start = window_start,
-  window_end = window_end,
+  organic_vars = c("organic_google", "blog_traffic", "referral"),
+  factor_vars = c("tv_is_on"), # force variables in context_vars or organic_vars to be categorical
+  window_start = "2024-01-01",
+  window_end = "2024-10-05",
   adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
 OutputCollect <- robyn_run(
