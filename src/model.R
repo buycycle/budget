@@ -38,8 +38,6 @@ df_filtered <- df %>% filter(country == country_code)
 # Determine the minimum and maximum dates
 window_start <- min(df_filtered$date, na.rm = TRUE)
 window_end <- max(df_filtered$date, na.rm = TRUE)
-print(window_start)
-print(window_end)
 
 
 inputcollect <- robyn_inputs(
@@ -53,10 +51,10 @@ inputcollect <- robyn_inputs(
   prophet_vars = c("trend","season", "weekday"),  #"trend","season", "weekday" & "holiday"
   #prophet_country = "de", # input one country. dt_prophet_holidays includes 59 countries by default
 
-  context_vars = c("uploads_private", "uploads_commercial", "crossborder_sales", "n_distinct_searches", "app_installs"), # e.g. competitors, discount, unemployment etc
-  paid_media_spends = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "ga_supply_pmax_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "ga_app_spend", "youtube_spend", "youtube_spend", "google_ads_dg", "google_ads_dg", "google_ads_dg", "youtube_spend"), # mandatory input
-  paid_media_vars = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "ga_supply_pmax_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "ga_app_spend", "youtube_spend", "youtube_spend", "google_ads_dg", "google_ads_dg", "google_ads_dg", "youtube_spend"), # mandatory.
-  organic_vars = c("organic_google", "blog_traffic", "referral"), # marketing activity without media spend
+  context_vars = c("uploads_private", "uploads_commercial", "crossborder_sales", "n_distinct_searches", "app_installs", "android_installs", "apple_installs", "uploads_total", "cum_private_uploads14day", "cum_commercial_uploads14day", "avg_buycycle_fee", "discount_amt", "n_searches","newsletter_daily_sessions"),
+  paid_media_spends = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "ga_supply_pmax_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "ga_app_spend", "youtube_spend", "google_ads_dg"),
+  paid_media_vars = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "ga_supply_pmax_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "ga_app_spend", "youtube_spend", "google_ads_dg"),
+  organic_vars = c("organic_google", "blog_traffic", "referral")
   #factor_vars = c("m_tdf"), # force variables in context_vars or organic_vars to be categorical
   window_start = window_start,
   window_end = window_end,
