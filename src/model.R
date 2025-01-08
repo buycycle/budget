@@ -68,8 +68,10 @@ OutputCollect <- robyn_run(
   iterations = 2000, # Number of iterations for the model
   trials = 5 # Number of trials for hyperparameter optimization
 )
-# Check the results
-print(OutputCollect)
+
+# Save results
+saveRDS(OutputCollect, file = "data/OutputCollect.rds"
 # Plot the results
 robyn_plot(OutputCollect)
+
 
