@@ -18,17 +18,15 @@ library(reticulate)
 
 
 ################################
-
-
-
-
+library(Robyn)
+# Load the reticulate package
+library(reticulate)
+################################
 ################################################
 ############# START ROBYN MODEL ################
 ################################################
-
 data("dt_prophet_holidays")
 head(dt_prophet_holidays)
-
 library(dplyr)
 # Create a mock data frame with 10 rows
 mock_length = 200
@@ -43,20 +41,15 @@ df <- tibble(
   google_ads_brand_spend = runif(mock_length, 30, 150),
   organic_google = runif(mock_length, 30, 150),
 )
-
-InputCollect <- robyn_inputs(
+inputcollect <- robyn_inputs(
   dt_input = df,
   dt_holidays = dt_prophet_holidays,
-
   date_var = "date", # date format must be "2020-01-01"
   dep_var = "revenue", # there should be only one dependent variable
   dep_var_type = "revenue", # "revenue" (roi) or "conversion" (cpa)
-
   prophet_vars = c("trend","season", "weekday"),  #"trend","season", "weekday" & "holiday"
   #prophet_country = "de", # input one country. dt_prophet_holidays includes 59 countries by default
-
   context_vars = c("uploads_private","uploads_commercial"),
-
   paid_media_spends =  c("google_ads_brand_spend"),
   paid_media_vars =  c("google_ads_brand_spend"),
   # paid_media_vars must have same order as paid_media_spends. use media exposure metrics like
@@ -67,29 +60,14 @@ InputCollect <- robyn_inputs(
   window_end = "2024-02-05",
   adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
-hyper_names_list <- hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
-# Print the hyperparameter names to verify
-print(hyper_names_list)
-# Define mock hyperparameters based on the generated names
-hyperparameters <- list(
-  google_ads_brand_spend_alphas = c(0.5, 3),
-  google_ads_brand_spend_gammas = c(0.3, 1),
-  google_ads_brand_spend_shapes = c(0.0001, 10),  # For Weibull PDF
-  google_ads_brand_spend_scales = c(0, 0.1),      # For Weibull PDF
-  organic_google_alphas = c(0.5, 3),
-  organic_google_gammas = c(0.3, 1),
-  organic_google_shapes = c(0.0001, 10),          # For Weibull PDF
-  organic_google_scales = c(0, 0.1),              # For Weibull PDF
-  train_size = c(0.5, 0.8)
-)
-InputCollect <- robyn_inputs(InputCollect = InputCollect, hyperparameters = hyperparameters)
-
 OutputCollect <- robyn_run(
-  InputCollect = InputCollect,
+  InputCollect = inputcollect,
   cores = 4, # Number of CPU cores to use
   iterations = 2000, # Number of iterations for the model
   trials = 5 # Number of trials for hyperparameter optimization
 )
+# Save the results to a file
+saveRDS(OutputCollect, file = "OutputCollect.rds")
 # Check the results
 print(OutputCollect)
 # Plot the results
