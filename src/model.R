@@ -26,14 +26,14 @@ library(reticulate)
 ############# START ROBYN MODEL ################
 ################################################
 
-library(dplyr)
+
+source("src/data.R")
 
 # read csv snowflake export
 data_path <- "data/data.csv"
 df <- read.csv(data_path)
 
-df$date = as.Date(df$date,  format = "%Y-%m-%d")
-df <- df[order(df$date),]
+df <- fill_missing_days(df)
 
 
 

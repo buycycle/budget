@@ -1,0 +1,11 @@
+[DB]
+account = nm39144.eu-central-1
+host = nm39144.eu-central-1.snowflakecomputing.com
+port = 443
+dbname = DWH
+user = MMM_USER
+password = 3&AP;3K>BaQF+&m
+role = MMM_ROLE
+warehouse = RUDDER_WAREHOUSE
+schema = BL
+
