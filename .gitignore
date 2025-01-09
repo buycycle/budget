@@ -4,5 +4,7 @@ config/config.ini
 # data folder
 data/*
 
+background.md
+
 .RData
 .Rhistory
