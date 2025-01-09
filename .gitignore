@@ -3,6 +3,8 @@ config/config.ini
 
 # data folder
 data/*
+# analysis folder
+analysis/*
 
 background.md
 
