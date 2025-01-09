@@ -30,7 +30,7 @@ fill_missing_days <- function(df) {
 
   # Fill missing values with the last observation carried forward
   filled_df <- complete_df %>%
-    fill(value, .direction = "down")
+    fill(everything(), .direction = "down")
 
   return(filled_df)
 }
