@@ -32,9 +32,12 @@ library(dplyr)
 data_path <- "data/data.csv"
 df <- read.csv(data_path)
 
-df$date = as.Date(df$date,  format = "%Y/%m/%d")
+df$date = as.Date(df$date,  format = "%Y-%m-%d")
 df <- df[order(df$date),]
-df <- df[!is.na(df$date) & is.finite(df$date), ]
+df$date_mock <- seq.Date(from = as.Date("2024-01-01"),
+                    by = "day",
+                    length.out = nrow(df))
+
 
 
 country_code <- "FR"
@@ -45,6 +48,7 @@ abs.Date <- function(x){x}
 inputcollect <- robyn_inputs(
   dt_input = df_filtered,
   dt_holidays = dt_prophet_holidays,
+  date_var = "date_mock",
 
   dep_var = "gmv", # there should be only one dependent variable
   dep_var_type = "revenue", # "revenue" (roi) or "conversion" (cpa)
@@ -58,7 +62,7 @@ inputcollect <- robyn_inputs(
   organic_vars = c("organic_google", "blog_traffic", "referral"),
   factor_vars = c("tv_is_on"), # force variables in context_vars or organic_vars to be categorical
   window_start = "2024-01-01",
-  window_end = "2024-10-05",
+  window_end = "2024-02-05",
   adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
 OutputCollect <- robyn_run(
