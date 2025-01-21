@@ -40,21 +40,33 @@ df <- fill_missing_days(df)
 
 inputcollect <- robyn_inputs(
   dt_input = df,
-  dt_holidays = dt_prophet_holidays,
+  dt_holidays = dt_prophet_holidays, 
   date_var = "date",
 
   dep_var = "gmv", # there should be only one dependent variable
   dep_var_type = "revenue", # "revenue" (roi) or "conversion" (cpa)
 
-  prophet_vars = c("trend","season", "weekday"),  #"trend","season", "weekday" & "holiday"
-  #prophet_country = "de", # input one country. dt_prophet_holidays includes 59 countries by default
+  prophet_vars = c("trend", "season", "weekday", "holiday"),  #"trend","season", "weekday" & "holiday"
+  prophet_country = "DE", # input one country. dt_prophet_holidays includes 59 countries by default
 
-  context_vars = c("uploads_private", "uploads_commercial", "crossborder_sales", "n_distinct_searches", "app_installs", "android_installs", "apple_installs", "uploads_total", "cum_private_uploads14day", "cum_commercial_uploads14day", "avg_buycycle_fee", "discount_amt", "n_searches", "tv_is_on"),
-  paid_media_spends = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "google_ads_dg"),
-  paid_media_vars = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "google_ads_dg"),
+  # context_vars are external or contextual variables that might affect your dependent variable but are not part of the media spends.
+  context_vars = c("uploads_total", "uploads_private", "uploads_commercial", "cum_private_uploads14day", "cum_commercial_uploads14day", "crossborder_sales", "n_searches", "n_distinct_searches", "app_installs", "android_installs", "apple_installs", "avg_buycycle_fee", "discount_amt", "tv_is_on"),
 
-  organic_vars = c(),
+  paid_media_spends = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "ga_supply_pmax_spend", "ga_app_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "youtube_spend", "tv_spent_eur"),
+  # ??? "google_ads_dg", "referal"cost?or not??? 
+
+  # media exposure metrics like Facebook impressions, search clicks. If you have these metrics, Robyn will use them instead of spend for modeling.
+  paid_media_vars = c(),
+
+  # marketing activities, which are not tied to any paid media spend, like newsletters.
+  organic_vars = c("newletter_daily_sessions", "blog_traffic"),
+  # ??? "organic_google"
+
+  # window_start = "",
+  # window_end = "",
+
   factor_vars = c("tv_is_on"), # force variables in context_vars or organic_vars to be categorical
+
   adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
 
