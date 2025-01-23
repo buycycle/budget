@@ -38,7 +38,7 @@ df <- fill_missing_days(df)
 
 
 
-inputcollect <- robyn_inputs(
+InputCollect <- robyn_inputs(
   dt_input = df,
   dt_holidays = dt_prophet_holidays,
   date_var = "date",
@@ -55,7 +55,6 @@ inputcollect <- robyn_inputs(
   paid_media_vars = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "google_ads_dg"),
 
   organic_vars = c(),
->>>>>>> c8bd5d44b672da4f7c233ad0428a57baeb09238f
   factor_vars = c("tv_is_on"), # force variables in context_vars or organic_vars to be categorical
   adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
@@ -219,7 +218,7 @@ hyperparameters <- list(
   YT_Flobikes_scales = c(0, 0.1)
 )
 
-inputcollect <- robyn_inputs(InputCollect = inputcollect, hyperparameters = hyperparameters)
+InputCollect <- robyn_inputs(InputCollect = InputCollect, hyperparameters = hyperparameters)
 
 
 OutputCollect <- robyn_run(
