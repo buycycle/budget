@@ -39,7 +39,3 @@
     * cross validation supported
     * enable output
     * model selection seems to be a craft
-
-
-
-
