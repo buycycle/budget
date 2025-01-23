@@ -50,9 +50,10 @@ inputcollect <- robyn_inputs(
   #prophet_country = "de", # input one country. dt_prophet_holidays includes 59 countries by default
 
   context_vars = c("uploads_private", "uploads_commercial", "crossborder_sales", "n_distinct_searches", "app_installs", "android_installs", "apple_installs", "uploads_total", "cum_private_uploads14day", "cum_commercial_uploads14day", "avg_buycycle_fee", "discount_amt", "n_searches","newsletter_daily_sessions","tv_is_on"),
-  paid_media_spends = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "ga_supply_pmax_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "ga_app_spend", "youtube_spend", "google_ads_dg"),
-  paid_media_vars = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "ga_supply_pmax_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "ga_app_spend", "youtube_spend", "google_ads_dg"),
-  organic_vars = c("organic_google", "blog_traffic", "referral"),
+  paid_media_spends = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "google_ads_dg"),
+  paid_media_vars = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "google_ads_dg"),
+
+  organic_vars = c(),
   factor_vars = c("tv_is_on"), # force variables in context_vars or organic_vars to be categorical
   adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
