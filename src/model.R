@@ -96,7 +96,7 @@ InputCollect <- robyn_inputs(
   dep_var_type = "revenue", # "revenue" (roi) or "conversion" (cpa)
 
   prophet_vars = c("trend","season", "weekday"),  #"trend","season", "weekday" & "holiday"
-  #prophet_country = "de", # input one country. dt_prophet_holidays includes 59 countries by default
+  prophet_country = country, # input one country. dt_prophet_holidays includes 59 countries by default
 
 
   context_vars = c("uploads_private", "uploads_commercial", "crossborder_sales", "n_distinct_searches", "app_installs", "android_installs", "apple_installs", "uploads_total", "cum_private_uploads14day", "cum_commercial_uploads14day", "avg_buycycle_fee", "discount_amt", "n_searches", "tv_is_on"),
@@ -116,7 +116,7 @@ InputCollect <- robyn_inputs(InputCollect = InputCollect)
 
 OutputModel <- robyn_run(
   InputCollect = InputCollect,
-  cores = -1, # Number of CPU cores to use
+  cores = 32, # Number of CPU cores to use
   iterations = 2000, # Number of iterations for the model
   trials = 5 # Number of trials for hyperparameter optimization
 )
