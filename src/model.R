@@ -114,16 +114,23 @@ hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
 InputCollect <- robyn_inputs(InputCollect = InputCollect)
 
 
-OutputCollect <- robyn_run(
+OutputModel <- robyn_run(
   InputCollect = InputCollect,
-  cores = 4, # Number of CPU cores to use
+  cores = -1, # Number of CPU cores to use
   iterations = 2000, # Number of iterations for the model
   trials = 5 # Number of trials for hyperparameter optimization
 )
 
-# Save results
-saveRDS(OutputCollect, file = "data/OutputCollect.rds"
-# Plot the results
-robyn_plot(OutputCollect)
+saveRDS(OutputModel, file = "data/OutputModel.rds")
+
+OutputCollect <- robyn_outputs(
+  InputCollect, OutputModel,
+  # pareto_fronts = "auto",
+  csv_out = "pareto", # "pareto", "all", or NULL (for none)
+  clusters = TRUE, # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
+  plot_pareto = TRUE, # Set to FALSE to deactivate plotting and saving model one-pagers
+  plot_folder = "plot/", # path for plots export
+  export = TRUE # this will create files locally
+)
 
 
