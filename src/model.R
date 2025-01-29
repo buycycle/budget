@@ -96,7 +96,7 @@ InputCollect <- robyn_inputs(
   dep_var_type = "revenue", # "revenue" (roi) or "conversion" (cpa)
 
   prophet_vars = c("trend","season", "weekday"),  #"trend","season", "weekday" & "holiday"
-  #prophet_country = "de", # input one country. dt_prophet_holidays includes 59 countries by default
+  prophet_country = country, # input one country. dt_prophet_holidays includes 59 countries by default
 
 
   context_vars = c("uploads_private", "uploads_commercial", "crossborder_sales", "n_distinct_searches", "app_installs", "android_installs", "apple_installs", "uploads_total", "cum_private_uploads14day", "cum_commercial_uploads14day", "avg_buycycle_fee", "discount_amt", "n_searches", "tv_is_on"),
@@ -133,4 +133,38 @@ OutputCollect <- robyn_outputs(
   export = TRUE # this will create files locally
 )
 
+
+select_model <- "1_216_6" # Pick one of the models from OutputCollect to proceed
+
+#### Since 3.7.1: JSON export and import (faster and lighter than RDS files)
+ExportedModel <- robyn_write(InputCollect, OutputCollect, select_model)
+
+AllocatorCollect1 <- robyn_allocator(
+  InputCollect = InputCollect,
+  OutputCollect = OutputCollect,
+  select_model = select_model,
+  date_min = "2024-10-20",
+  date_max = "2024-11-19",
+  #date_range = 30, # When NULL, will set last month (30 days, 4 weeks, or 1 month)
+  total_budget = NULL, # When NULL, use total spend of date_range
+  channel_constr_low = c(0.3, 0.3, 0.3, 0.3, 0.3, 0.3),
+  channel_constr_up = c(1.1, 2, 2, 2, 2, 2),
+  channel_constr_multiplier = 3,
+  scenario = "max_historical_response",
+  export = TRUE
+)
+
+#run historic max_response Budget Allocator.
+AllocatorCollect1 <- robyn_allocator(
+  InputCollect = InputCollect,
+  OutputCollect = OutputCollect,
+  select_model = select_model,
+  scenario = "max_historical_response",
+  #paid_media_spends = c("TV",	"Influencer",	"BTL" ,	"OOH", "FB_OLV_s", "Google_OLV_s", "FB_acq_s", "Google_acq_s", "TikTok_s", "Strike", "Voucher_acq")
+  channel_constr_low = 0.5,
+  channel_constr_up = 1.5,
+  export = TRUE,
+  date_min = "2024-10-20",
+  date_max = "2024-11-19",
+)
 
