@@ -116,7 +116,7 @@ InputCollect <- robyn_inputs(InputCollect = InputCollect)
 
 OutputModel <- robyn_run(
   InputCollect = InputCollect,
-  cores = -1, # Number of CPU cores to use
+  cores = 32, # Number of CPU cores to use
   iterations = 2000, # Number of iterations for the model
   trials = 5 # Number of trials for hyperparameter optimization
 )
