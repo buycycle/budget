@@ -147,8 +147,8 @@ AllocatorCollect1 <- robyn_allocator(
   date_max = "2024-11-19",
   #date_range = 30, # When NULL, will set last month (30 days, 4 weeks, or 1 month)
   total_budget = NULL, # When NULL, use total spend of date_range
-  channel_constr_low = c(0.3, 0.3, 0.3, 0.3, 0.3, 0.3),
-  channel_constr_up = c(1.1, 2, 2, 2, 2, 2),
+  channel_constr_low = c(0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3)
+  channel_constr_up = c(1.1, 2, 2, 2, 2, 2, 2, 2, 2, 2)
   channel_constr_multiplier = 3,
   scenario = "max_historical_response",
   export = TRUE
