@@ -149,6 +149,6 @@ AllocatorCollect1 <- robyn_allocator(
   channel_constr_low = 0.5,
   channel_constr_up = 1.5,
   channel_constr_multiplier = 3,
-  scenario = "max_historical_response",
+  scenario = "low 05 high 15",
   export = TRUE
 )
