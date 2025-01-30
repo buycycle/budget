@@ -143,28 +143,12 @@ AllocatorCollect1 <- robyn_allocator(
   InputCollect = InputCollect,
   OutputCollect = OutputCollect,
   select_model = select_model,
-  date_min = "2024-10-20",
-  date_max = "2024-11-19",
+  date_range = c("2024-11-01", "2024-12-01"), # Last 10 periods, same as c("2018-10-22", "2018-12-31")
   #date_range = 30, # When NULL, will set last month (30 days, 4 weeks, or 1 month)
   total_budget = NULL, # When NULL, use total spend of date_range
-  channel_constr_low = c(0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3)
-  channel_constr_up = c(1.1, 2, 2, 2, 2, 2, 2, 2, 2, 2)
+  channel_constr_low = 0.5,
+  channel_constr_up = 1.5,
   channel_constr_multiplier = 3,
   scenario = "max_historical_response",
   export = TRUE
 )
-
-#run historic max_response Budget Allocator.
-AllocatorCollect1 <- robyn_allocator(
-  InputCollect = InputCollect,
-  OutputCollect = OutputCollect,
-  select_model = select_model,
-  scenario = "max_historical_response",
-  #paid_media_spends = c("TV",	"Influencer",	"BTL" ,	"OOH", "FB_OLV_s", "Google_OLV_s", "FB_acq_s", "Google_acq_s", "TikTok_s", "Strike", "Voucher_acq")
-  channel_constr_low = 0.5,
-  channel_constr_up = 1.5,
-  export = TRUE,
-  date_min = "2024-10-20",
-  date_max = "2024-11-19",
-)
-
