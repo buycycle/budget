@@ -29,8 +29,8 @@ library(reticulate)
 
 source("src/data.R")
 
-country <- "DE"
-management_region <- "DACH"
+country <- "FR"
+management_region <- "FRA"
 # Construct the command to call the Python script
 fetch_data <- sprintf("python src/data.py %s %s", country, management_region)
 # Execute the command
@@ -149,6 +149,6 @@ AllocatorCollect1 <- robyn_allocator(
   channel_constr_low = 0.5,
   channel_constr_up = 1.5,
   channel_constr_multiplier = 3,
-  scenario = "low 05 high 15",
+  scenario = "max_historical_response",
   export = TRUE
 )
