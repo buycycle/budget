@@ -184,7 +184,7 @@ AllocatorCollect2 <- robyn_allocator(
   channel_constr_low = 0.5,
   channel_constr_up = 1.5,
   total_budget = 150000, # Total spend to be simulated
-  date_range = c("2025-02-01", "2024-03-01"), # Last 10 periods, same as c("2018-10-22", "2018-12-31")
+  date_range = c("2025-02-01", "2025-03-01"), # Last 10 periods, same as c("2018-10-22", "2018-12-31")
   export = TRUE
 )
 
