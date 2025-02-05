@@ -29,8 +29,8 @@ library(reticulate)
 
 source("src/data.R")
 
-country <- "FR"
-management_region <- "FRA"
+country <- "DE"
+management_region <- "DACH"
 # Construct the command to call the Python script
 fetch_data <- sprintf("python src/data.py %s %s", country, management_region)
 # Execute the command
@@ -159,6 +159,7 @@ print(paste("Automatically selected model:", select_model))
 #### Since 3.7.1: JSON export and import (faster and lighter than RDS files)
 ExportedModel <- robyn_write(InputCollect, OutputCollect, select_model)
 
+#run historic max_response Budget Allocator.
 AllocatorCollect1 <- robyn_allocator(
   InputCollect = InputCollect,
   OutputCollect = OutputCollect,
@@ -172,3 +173,18 @@ AllocatorCollect1 <- robyn_allocator(
   scenario = "max_historical_response",
   export = TRUE
 )
+
+
+# predict future optimal budget allocation
+AllocatorCollect2 <- robyn_allocator(
+  InputCollect = InputCollect,
+  OutputCollect = OutputCollect,
+  select_model = select_model,
+  scenario = "max_response",
+  channel_constr_low = 0.5,
+  channel_constr_up = 1.5,
+  total_budget = 150000, # Total spend to be simulated
+  date_range = c("2025-02-01", "2024-03-01"), # Last 10 periods, same as c("2018-10-22", "2018-12-31")
+  export = TRUE
+)
+
