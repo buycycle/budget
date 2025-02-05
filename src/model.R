@@ -134,7 +134,27 @@ OutputCollect <- robyn_outputs(
 )
 
 
-select_model <- "1_216_6" # Pick one of the models from OutputCollect to proceed
+
+# Automatically select the model with the best combined score
+pareto_models <- OutputCollect$allSolutions
+metrics <- OutputCollect$resultHypParam[OutputCollect$resultHypParam$solID %in% pareto_models, ]
+
+# Calculate combined score (lower is better)
+metrics$score <- sqrt(metrics$nrmse^2 + metrics$decomp.rssd^2)
+
+# Alternative: Select model with highest R-squared
+# metrics <- metrics[order(-metrics$rsq_train), ]
+
+# Select the best model
+best_model <- metrics$solID[which.min(metrics$score)]
+select_model <- best_model
+
+# For safety, you might want to add:
+if(length(select_model) == 0) {
+  stop("No valid model selected. Check model selection logic.")
+}
+
+print(paste("Automatically selected model:", select_model))
 
 #### Since 3.7.1: JSON export and import (faster and lighter than RDS files)
 ExportedModel <- robyn_write(InputCollect, OutputCollect, select_model)
