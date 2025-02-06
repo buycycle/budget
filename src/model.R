@@ -31,6 +31,9 @@ source("src/data.R")
 
 country <- "DE"
 management_region <- "DACH"
+
+
+
 # Construct the command to call the Python script
 fetch_data <- sprintf("python src/data.py %s %s", country, management_region)
 # Execute the command
@@ -41,6 +44,17 @@ data_path <- "data/data.csv"
 df <- read.csv(data_path)
 
 df <- fill_missing_days(df)
+
+# add future date range to predict for
+validation_date_range = c("2024-10-01", "2024-11-01")
+predict_date_range = c("2025-02-01", "2025-03-01")
+future_dates <- data.frame(date = seq(from = min(predict_date_range), to = max(predict_date_range), by = "day"))
+# Identify any missing dates and ensure they're included in the sequence
+existing_dates <- df$date
+# Filter out any already existing dates to only add new ones
+future_dates <- future_dates[!future_dates$date %in% existing_dates, ]
+# Combine historical df with future dataframe
+df <- rbind(df, future_dates)
 
 hyperparameters <- list(
   ga_brand_search_spend_alphas = c(0.5, 3),
@@ -87,7 +101,7 @@ hyperparameters <- list(
 
 
 
-InputCollect <- robyn_inputs(
+InputCollect_training <- robyn_inputs(
   dt_input = df,
   dt_holidays = dt_prophet_holidays,
   date_var = "date",
@@ -142,8 +156,6 @@ metrics <- OutputCollect$resultHypParam[OutputCollect$resultHypParam$solID %in% 
 # Calculate combined score (lower is better)
 metrics$score <- sqrt(metrics$nrmse^2 + metrics$decomp.rssd^2)
 
-# Alternative: Select model with highest R-squared
-# metrics <- metrics[order(-metrics$rsq_train), ]
 
 # Select the best model
 best_model <- metrics$solID[which.min(metrics$score)]
@@ -164,8 +176,7 @@ AllocatorCollect1 <- robyn_allocator(
   InputCollect = InputCollect,
   OutputCollect = OutputCollect,
   select_model = select_model,
-  date_range = c("2024-10-01", "2024-11-01"), # Last 10 periods, same as c("2018-10-22", "2018-12-31")
-  #date_range = 30, # When NULL, will set last month (30 days, 4 weeks, or 1 month)
+  date_range = validation_date_range,
   total_budget = NULL, # When NULL, use total spend of date_range
   channel_constr_low = 0.5,
   channel_constr_up = 1.5,
@@ -175,7 +186,7 @@ AllocatorCollect1 <- robyn_allocator(
 )
 
 
-# predict future optimal budget allocation
+
 AllocatorCollect2 <- robyn_allocator(
   InputCollect = InputCollect,
   OutputCollect = OutputCollect,
@@ -184,7 +195,7 @@ AllocatorCollect2 <- robyn_allocator(
   channel_constr_low = 0.5,
   channel_constr_up = 1.5,
   total_budget = 150000, # Total spend to be simulated
-  date_range = c("2025-01-01", "2025-03-01"), # Last 10 periods, same as c("2018-10-22", "2018-12-31")
+  date_range = predict_date_range,
   export = TRUE
 )
 

@@ -66,7 +66,7 @@ InputCollect <- robyn_inputs(
   organic_vars = c("organic_google","blog_traffic","referral"), # marketing activity without media spend
   #factor_vars = c("m_tdf"), # force variables in context_vars or organic_vars to be categorical
   window_start = "2024-01-01",
-  window_end = "2024-10-05",
+  window_end = "2025-02-01",
   adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
 
