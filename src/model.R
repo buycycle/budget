@@ -1,30 +1,9 @@
-#https://github.com/facebookexperimental/Robyn/blob/main/demo/install_nevergrad.R
-
-#also den python pfad aufs richtige verzeichnis zu legen bevor man die packages installiert (Sys.setenv(RETICULATE_PYTHON = "~/.virtualenvs/r-reticulate/bin/python")
-
-
-#### Step 0: Setup environment
-
-## Install, load, and check (latest) version.
-## Install the stable version from CRAN.
-# install.packages("Robyn")
-## Install the dev version from GitHub
-# install.packages("remotes") # Install remotes first if you haven't already
-# remotes::install_github("facebookexperimental/Robyn/R")
 library(Robyn)
 
 # Load the reticulate package
 library(reticulate)
 
 
-################################
-
-
-
-
-################################################
-############# START ROBYN MODEL ################
-################################################
 
 
 source("src/data.R")
@@ -45,16 +24,8 @@ df <- read.csv(data_path)
 
 df <- fill_missing_days(df)
 
-# add future date range to predict for
 validation_date_range = c("2024-10-01", "2024-11-01")
-predict_date_range = c("2025-02-01", "2025-03-01")
-future_dates <- data.frame(date = seq(from = min(predict_date_range), to = max(predict_date_range), by = "day"))
-# Identify any missing dates and ensure they're included in the sequence
-existing_dates <- df$date
-# Filter out any already existing dates to only add new ones
-future_dates <- future_dates[!future_dates$date %in% existing_dates, ]
-# Combine historical df with future dataframe
-df <- rbind(df, future_dates)
+prediction_date_range = c("2025-10-01", "2025-11-01")
 
 hyperparameters <- list(
   ga_brand_search_spend_alphas = c(0.5, 3),
@@ -101,7 +72,7 @@ hyperparameters <- list(
 
 
 
-InputCollect_training <- robyn_inputs(
+InputCollect <- robyn_inputs(
   dt_input = df,
   dt_holidays = dt_prophet_holidays,
   date_var = "date",
@@ -195,7 +166,7 @@ AllocatorCollect2 <- robyn_allocator(
   channel_constr_low = 0.5,
   channel_constr_up = 1.5,
   total_budget = 150000, # Total spend to be simulated
-  date_range = predict_date_range,
+  date_range = prediction_date_range,
   export = TRUE
 )
 
