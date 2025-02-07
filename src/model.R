@@ -143,7 +143,7 @@ print(paste("Automatically selected model:", select_model))
 ExportedModel <- robyn_write(InputCollect, OutputCollect, select_model)
 
 #run historic max_response Budget Allocator.
-AllocatorCollect1 <- robyn_allocator(
+HistoricAllocatorCollect <- robyn_allocator(
   InputCollect = InputCollect,
   OutputCollect = OutputCollect,
   select_model = select_model,
@@ -158,15 +158,23 @@ AllocatorCollect1 <- robyn_allocator(
 
 
 
-AllocatorCollect2 <- robyn_allocator(
+# Predict future values
+PredictedData <- robyn_predict(
+  InputCollect = InputCollect,
+  OutputCollect = OutputCollect,
+  select_model = select_model,
+  date_range = prediction_date_range
+)
+# Run future max_response Budget Allocator with predicted data
+FutureAllocatorCollect <- robyn_allocator(
   InputCollect = InputCollect,
   OutputCollect = OutputCollect,
   select_model = select_model,
   scenario = "max_response",
   channel_constr_low = 0.5,
   channel_constr_up = 1.5,
-  total_budget = 150000, # Total spend to be simulated
+  total_budget = 150000,
   date_range = prediction_date_range,
-  export = TRUE
+  export = TRUE,
+  dt_input = PredictedData # Use predicted data for allocation
 )
-
