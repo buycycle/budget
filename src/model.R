@@ -7,6 +7,7 @@ library(reticulate)
 
 
 source("src/data.R")
+source("src/predict.R")
 
 country <- "DE"
 management_region <- "DACH"
@@ -155,8 +156,6 @@ HistoricAllocatorCollect <- robyn_allocator(
   scenario = "max_historical_response",
   export = TRUE
 )
-
-
 
 # Predict future values
 PredictedData <- robyn_predict(
