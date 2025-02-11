@@ -26,7 +26,7 @@ df <- read.csv(data_path)
 df <- fill_missing_days(df)
 
 validation_date_range = c("2024-10-01", "2024-11-01")
-prediction_date_range = c("2025-10-01", "2025-11-01")
+prediction_date_range = c("2025-02-01", "2025-03-01")
 
 hyperparameters <- list(
   ga_brand_search_spend_alphas = c(0.5, 3),
@@ -164,9 +164,35 @@ PredictedData <- robyn_predict(
   select_model = select_model,
   date_range = prediction_date_range
 )
+
+InputCollectPredict <- robyn_inputs(
+  dt_input = PredictedData,
+  dt_holidays = dt_prophet_holidays,
+  date_var = "date",
+
+  dep_var = "gmv", # there should be only one dependent variable
+  dep_var_type = "revenue", # "revenue" (roi) or "conversion" (cpa)
+
+  prophet_vars = c("trend","season", "weekday"),  #"trend","season", "weekday" & "holiday"
+  prophet_country = country, # input one country. dt_prophet_holidays includes 59 countries by default
+
+
+  context_vars = c("uploads_private", "uploads_commercial", "crossborder_sales", "n_distinct_searches", "app_installs", "android_installs", "apple_installs", "uploads_total", "cum_private_uploads14day", "cum_commercial_uploads14day", "avg_buycycle_fee", "discount_amt", "n_searches", "tv_is_on"),
+  paid_media_spends = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "google_ads_dg"),
+  paid_media_vars = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "google_ads_dg"),
+
+  organic_vars = c(),
+  factor_vars = c("tv_is_on"), # force variables in context_vars or organic_vars to be categorical
+  hyperparameters=hyperparameters,
+  adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
+)
+
+hyper_names(adstock = InputCollectPredict$adstock, all_media = InputCollectPredict$all_media)
+
+InputCollectPredict <- robyn_inputs(InputCollect = InputCollectPredict)
 # Run future max_response Budget Allocator with predicted data
 FutureAllocatorCollect <- robyn_allocator(
-  InputCollect = InputCollect,
+  InputCollect = InputCollectPredict,
   OutputCollect = OutputCollect,
   select_model = select_model,
   scenario = "max_response",
