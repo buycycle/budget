@@ -104,7 +104,8 @@ OutputModel <- robyn_run(
   InputCollect = InputCollect,
   cores = 32, # Number of CPU cores to use
   iterations = 2000, # Number of iterations for the model
-  trials = 5 # Number of trials for hyperparameter optimization
+  trials = 5, # Number of trials for hyperparameter optimization
+  ts_validation = TRUE
 )
 
 saveRDS(OutputModel, file = "data/OutputModel.rds")

@@ -5,6 +5,7 @@ config/config.ini
 data/*
 # analysis folder
 analysis/*
+plot/*
 
 background.md
 
