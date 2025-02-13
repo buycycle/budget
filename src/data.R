@@ -44,10 +44,13 @@ approx_weibull <- function(desired_day, target_cdf = 0.95) {
 
 assign_hyperparameters <- function(
   paid_media_spends,
+  organic_vars,
   alpha_range,
   gamma_range,
   digital_shape,
   digital_scale,
+  organic_shape,
+  organic_scale,
   tv_shape,
   tv_scale,
   prefix_media = c("ga_", "google_", "meta_", "bing_"),
@@ -75,6 +78,13 @@ assign_hyperparameters <- function(
       hyperparameters[[paste0(media, "_shapes")]] <- c(0.0001, tv_shape)
       hyperparameters[[paste0(media, "_scales")]] <- c(0, tv_scale)
     }
+  }
+  for (organic in organic_vars) {
+      # Set hyperparameters for digital channels
+      hyperparameters[[paste0(organic, "_alphas")]] <- alpha_range
+      hyperparameters[[paste0(organic, "_gammas")]] <- gamma_range
+      hyperparameters[[paste0(organic, "_shapes")]] <- c(0.0001, organic_shape)
+      hyperparameters[[paste0(organic, "_scales")]] <- c(0, organic_scale)
   }
 
   return(hyperparameters)

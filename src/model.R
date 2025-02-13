@@ -45,8 +45,7 @@ independent_columns <- setdiff(independent_columns, no_variance_cols) # Remove c
 paid_media_spends <- independent_columns[grepl("_cost$", independent_columns)]
 paid_media_vars <- paid_media_spends
 print(paste("paid_media_vars:", paste(paid_media_vars, collapse = ", ")))
-organic_vars <- c()
-# organic_vars <- independent_columns[grepl("_sessions$", independent_columns)]
+organic_vars <- independent_columns[grepl("_sessions$", independent_columns)]
 print(paste("organic_vars:", paste(organic_vars, collapse = ", ")))
 context_vars <- setdiff(independent_columns, c(paid_media_spends, organic_vars))
 print(paste("context_vars:", paste(context_vars, collapse = ", ")))
@@ -54,18 +53,22 @@ factor_vars <- intersect(c("tv_is_on"), independent_columns) # Ensure tv_is_on i
 print(paste("factor_vars:", paste(factor_vars, collapse = ", ")))
 
 
+# Define hyperparameter for paid_media_vars and organic_vars
 # Calculate shape and scale for digital and TV channels
 digital_weibull <- approx_weibull(7)
 tv_weibull <- approx_weibull(30)
+organic_weibull <- approx_weibull(14)
 
-# Derived parameter values for digital
+# Derived parameter values for digital, TV and organic
 digital_shape <- digital_weibull$shape
 # bing_competitor_cost_scales's hyperparameter must have upper bound <=1
 digital_scale <- pmin(digital_weibull$scale, 1) # Ensure upper bound of 1
 
-# Derived parameter values for TV
 tv_shape <- tv_weibull$shape
 tv_scale <- tv_weibull$scale
+
+organic_shape <- organic_weibull$shape
+organic_scale <- pmin(organic_weibull$scale, 1)
 
 # Define parameter ranges and fits
 alpha_range <- c(0.5, 3)
@@ -74,10 +77,13 @@ gamma_range <- c(0.3, 1)
 # Assign hyperparameters with custom prefixes
 hyperparameters <- assign_hyperparameters(
   paid_media_spends,
+  organic_vars,
   alpha_range,
   gamma_range,
   digital_shape,
   digital_scale,
+  organic_shape,
+  organic_scale,
   tv_shape,
   tv_scale,
   prefix_media = c("ga_", "google_", "meta_", "bing_"),
@@ -101,7 +107,6 @@ InputCollect <- robyn_inputs(
   prophet_vars = c("trend","season", "weekday", "holiday"), 
   prophet_country = country, # input one country. dt_prophet_holidays includes 59 countries by default
 
-
   context_vars = context_vars,
   paid_media_spends = paid_media_spends,
   paid_media_vars = paid_media_vars,
@@ -110,10 +115,6 @@ InputCollect <- robyn_inputs(
   hyperparameters=hyperparameters,
   adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
-
-# Print InputCollect$all_media *AFTER* creating InputCollect
-print("Media variables identified by Robyn:")
-print(InputCollect$all_media)
 
 OutputModel <- robyn_run(
   InputCollect = InputCollect,
