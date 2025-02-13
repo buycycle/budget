@@ -56,19 +56,19 @@ print(paste("factor_vars:", paste(factor_vars, collapse = ", ")))
 # Define hyperparameter for paid_media_vars and organic_vars
 # Calculate shape and scale for digital and TV channels
 digital_weibull <- approx_weibull(7)
+organic_weibull <- approx_weibull(7)
 tv_weibull <- approx_weibull(30)
-organic_weibull <- approx_weibull(14)
 
 # Derived parameter values for digital, TV and organic
 digital_shape <- digital_weibull$shape
 # bing_competitor_cost_scales's hyperparameter must have upper bound <=1
 digital_scale <- pmin(digital_weibull$scale, 1) # Ensure upper bound of 1
 
-tv_shape <- tv_weibull$shape
-tv_scale <- tv_weibull$scale
-
 organic_shape <- organic_weibull$shape
 organic_scale <- pmin(organic_weibull$scale, 1)
+
+tv_shape <- tv_weibull$shape
+tv_scale <- tv_weibull$scale
 
 # Define parameter ranges and fits
 alpha_range <- c(0.5, 3)
@@ -104,7 +104,7 @@ InputCollect <- robyn_inputs(
   dep_var = "gmv", # there should be only one dependent variable
   dep_var_type = "revenue", # "revenue" (roi) or "conversion" (cpa)
 
-  prophet_vars = c("trend","season", "weekday", "holiday"), 
+  prophet_vars = c("trend","season", "weekday"),  #"trend","season", "weekday" & "holiday"
   prophet_country = country, # input one country. dt_prophet_holidays includes 59 countries by default
 
   context_vars = context_vars,
@@ -115,6 +115,10 @@ InputCollect <- robyn_inputs(
   hyperparameters=hyperparameters,
   adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
+
+hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
+
+InputCollect <- robyn_inputs(InputCollect = InputCollect)
 
 OutputModel <- robyn_run(
   InputCollect = InputCollect,
@@ -190,8 +194,8 @@ InputCollectPredict <- robyn_inputs(
   dep_var = "gmv", # there should be only one dependent variable
   dep_var_type = "revenue", # "revenue" (roi) or "conversion" (cpa)
 
-  prophet_vars = c("trend","season", "weekday", "holiday"), 
-  prophet_country = country, 
+  prophet_vars = c("trend","season", "weekday"),  #"trend","season", "weekday" & "holiday"
+  prophet_country = country, # input one country. dt_prophet_holidays includes 59 countries by default
 
   context_vars = context_vars,
   paid_media_spends = paid_media_spends,
