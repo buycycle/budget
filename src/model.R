@@ -29,14 +29,16 @@ validation_date_range = c("2024-10-01", "2024-11-01")
 prediction_date_range = c("2025-02-01", "2025-03-01")
 
 # Calculate shape and scale for digital and TV channels
-digital_shape, digital_scale <- approx_weibull(7)
-tv_shape, tv_scale <- approx_weibull(30)
+digital_weibull <- approx_weibull(7)
+organic_weibull <- approx_weibull(7)
+tv_weibull <- approx_weibull(30)
 
-# Derived parameter values for digital
 digital_shape <- digital_weibull$shape
 digital_scale <- digital_weibull$scale
 
-# Derived parameter values for TV
+organic_shape <- organic_weibull$shape
+organic_scale <- organic_weibull$scale
+
 tv_shape <- tv_weibull$shape
 tv_scale <- tv_weibull$scale
 
@@ -47,10 +49,13 @@ gamma_range <- c(0.3, 1)
 # Assign hyperparameters with custom prefixes
 hyperparameters <- assign_hyperparameters(
   paid_media_spends,
+  organic_vars,
   alpha_range,
   gamma_range,
   digital_shape,
   digital_scale,
+  organic_shape,
+  organic_scale,
   tv_shape,
   tv_scale,
   prefix_media = c("ga_", "google_", "meta_", "bing_"),
