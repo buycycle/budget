@@ -34,3 +34,48 @@ fill_missing_days <- function(df) {
 
   return(filled_df)
 }
+
+approx_weibull <- function(desired_day, target_cdf = 0.95) {
+  shape <- 2  # Initial guess for shape
+  scale <- desired_day / qweibull(target_cdf, shape, lower.tail = TRUE)
+  return(list(shape = shape, scale = scale))
+}
+
+
+assign_hyperparameters <- function(
+  paid_media_spends,
+  alpha_range,
+  gamma_range,
+  digital_shape,
+  digital_scale,
+  tv_shape,
+  tv_scale,
+  prefix_media = c("ga_", "google_", "meta_", "bing_"),
+  prefix_tv = "tv_spent_"
+) {
+  # Initialize hyperparameters list
+  hyperparameters <- list()
+
+  # Construct regular expressions from prefixes
+  digital_pattern <- paste0("^(", paste(prefix_media, collapse = "|"), ")")
+  tv_pattern <- paste0("^", prefix_tv)
+
+  # Loop over each media type
+  for (media in paid_media_spends) {
+    if (grepl(digital_pattern, media)) {
+      # Set hyperparameters for digital channels
+      hyperparameters[[paste0(media, "_alphas")]] <- alpha_range
+      hyperparameters[[paste0(media, "_gammas")]] <- gamma_range
+      hyperparameters[[paste0(media, "_shapes")]] <- c(0.0001, digital_shape)
+      hyperparameters[[paste0(media, "_scales")]] <- c(0, digital_scale)
+    } else if (grepl(tv_pattern, media)) {
+      # Set hyperparameters for TV channels
+      hyperparameters[[paste0(media, "_alphas")]] <- alpha_range
+      hyperparameters[[paste0(media, "_gammas")]] <- gamma_range
+      hyperparameters[[paste0(media, "_shapes")]] <- c(0.0001, tv_shape)
+      hyperparameters[[paste0(media, "_scales")]] <- c(0, tv_scale)
+    }
+  }
+
+  return(hyperparameters)
+}
