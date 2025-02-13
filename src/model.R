@@ -23,18 +23,45 @@ system(fetch_data)
 data_path <- "data/data.csv"
 df <- read.csv(data_path)
 
+print("Columns in df:")
+print(names(df))
+
 df <- fill_missing_days(df)
 
 validation_date_range = c("2024-10-01", "2024-11-01")
 prediction_date_range = c("2025-02-01", "2025-03-01")
 
+# Programmatically define variable types
+# 1. Get the column names for potential independent vars
+column_names <- names(df)
+independent_columns <- setdiff(column_names, c("date", "gmv", "management_region", "country"))
+
+# 2. Identify columns with no variance
+no_variance_cols <- independent_columns[sapply(df[independent_columns], function(x) length(unique(x)) == 1)]
+print(paste("Columns with no variance:", paste(no_variance_cols, collapse = ", ")))
+independent_columns <- setdiff(independent_columns, no_variance_cols) # Remove columns with no variance
+
+# 3. Define variables based on column names
+paid_media_spends <- independent_columns[grepl("_cost$", independent_columns)]
+paid_media_vars <- paid_media_spends
+print(paste("paid_media_vars:", paste(paid_media_vars, collapse = ", ")))
+organic_vars <- c()
+# organic_vars <- independent_columns[grepl("_sessions$", independent_columns)]
+print(paste("organic_vars:", paste(organic_vars, collapse = ", ")))
+context_vars <- setdiff(independent_columns, c(paid_media_spends, organic_vars))
+print(paste("context_vars:", paste(context_vars, collapse = ", ")))
+factor_vars <- intersect(c("tv_is_on"), independent_columns) # Ensure tv_is_on is still available
+print(paste("factor_vars:", paste(factor_vars, collapse = ", ")))
+
+
 # Calculate shape and scale for digital and TV channels
-digital_shape, digital_scale <- approx_weibull(7)
-tv_shape, tv_scale <- approx_weibull(30)
+digital_weibull <- approx_weibull(7)
+tv_weibull <- approx_weibull(30)
 
 # Derived parameter values for digital
 digital_shape <- digital_weibull$shape
-digital_scale <- digital_weibull$scale
+# bing_competitor_cost_scales's hyperparameter must have upper bound <=1
+digital_scale <- pmin(digital_weibull$scale, 1) # Ensure upper bound of 1
 
 # Derived parameter values for TV
 tv_shape <- tv_weibull$shape
@@ -57,28 +84,11 @@ hyperparameters <- assign_hyperparameters(
   prefix_tv = "tv_spent_"
 )
 
-# Get the column names for potential independent vars
-column_names <- names(df)
-independent_columns <- setdiff(column_names, c("date", "gmv", "management_region", "country"))
-
-# Identify columns with no variance
-no_variance_cols <- independent_columns[sapply(df[independent_columns], function(x) length(unique(x)) == 1)]
-print(paste("Columns with no variance:", paste(no_variance_cols, collapse = ", ")))
-
-# Remove columns with no variance
-independent_columns <- setdiff(independent_columns, no_variance_cols)
-
-# Define variables based on column names
-paid_media_spends <- independent_columns[grepl("_cost$", independent_columns)]
-paid_media_vars <- paid_media_spends
-print(paste("paid_media_vars:", paste(paid_media_vars, collapse = ", ")))
-organic_vars <- independent_columns[grepl("_sessions$", independent_columns)]
-print(paste("organic_vars:", paste(organic_vars, collapse = ", ")))
-context_vars <- setdiff(independent_columns, c(paid_media_spends, organic_vars))
-print(paste("context_vars:", paste(context_vars, collapse = ", ")))
-factor_vars <- intersect(c("tv_is_on"), independent_columns) # Ensure tv_is_on is still available
-print(paste("factor_vars:", paste(factor_vars, collapse = ", ")))
-
+# Print the assigned hyperparameters for debugging
+print("Assigned hyperparameters:")
+for (name in names(hyperparameters)) {
+  print(paste(name, ":", paste(hyperparameters[[name]], collapse = ", ")))
+}
 
 InputCollect <- robyn_inputs(
   dt_input = df,
@@ -101,10 +111,9 @@ InputCollect <- robyn_inputs(
   adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
 
-hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
-
-InputCollect <- robyn_inputs(InputCollect = InputCollect)
-
+# Print InputCollect$all_media *AFTER* creating InputCollect
+print("Media variables identified by Robyn:")
+print(InputCollect$all_media)
 
 OutputModel <- robyn_run(
   InputCollect = InputCollect,
