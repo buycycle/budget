@@ -28,47 +28,33 @@ df <- fill_missing_days(df)
 validation_date_range = c("2024-10-01", "2024-11-01")
 prediction_date_range = c("2025-02-01", "2025-03-01")
 
-hyperparameters <- list(
-  ga_brand_search_spend_alphas = c(0.5, 3),
-  ga_brand_search_spend_gammas = c(0.3, 1),
-  ga_brand_search_spend_scales = c(0, 0.1),
-  ga_brand_search_spend_shapes = c(0.0001, 10),
-  ga_demand_pmax_spend_alphas = c(0.5, 3),
-  ga_demand_pmax_spend_gammas = c(0.3, 1),
-  ga_demand_pmax_spend_scales = c(0, 0.1),
-  ga_demand_pmax_spend_shapes = c(0.0001, 10),
-  ga_demand_search_spend_alphas = c(0.5, 3),
-  ga_demand_search_spend_gammas = c(0.3, 1),
-  ga_demand_search_spend_scales = c(0, 0.1),
-  ga_demand_search_spend_shapes = c(0.0001, 10),
-  ga_demand_shopping_spend_alphas = c(0.5, 3),
-  ga_demand_shopping_spend_gammas = c(0.3, 1),
-  ga_demand_shopping_spend_scales = c(0, 0.1),
-  ga_demand_shopping_spend_shapes = c(0.0001, 10),
-  ga_supply_search_spend_alphas = c(0.5, 3),
-  ga_supply_search_spend_gammas = c(0.3, 1),
-  ga_supply_search_spend_scales = c(0, 0.1),
-  ga_supply_search_spend_shapes = c(0.0001, 10),
-  google_ads_dg_alphas = c(0.5, 3),
-  google_ads_dg_gammas = c(0.3, 1),
-  google_ads_dg_scales = c(0, 0.1),
-  google_ads_dg_shapes = c(0.0001, 10),
-  meta_brand_spend_alphas = c(0.5, 3),
-  meta_brand_spend_gammas = c(0.3, 1),
-  meta_brand_spend_scales = c(0, 0.1),
-  meta_brand_spend_shapes = c(0.0001, 10),
-  meta_demand_spend_alphas = c(0.5, 3),
-  meta_demand_spend_gammas = c(0.3, 1),
-  meta_demand_spend_scales = c(0, 0.1),
-  meta_demand_spend_shapes = c(0.0001, 10),
-  meta_supply_spend_alphas = c(0.5, 3),
-  meta_supply_spend_gammas = c(0.3, 1),
-  meta_supply_spend_scales = c(0, 0.1),
-  meta_supply_spend_shapes = c(0.0001, 10),
-  tv_spent_eur_alphas = c(0.5, 3),
-  tv_spent_eur_gammas = c(0.3, 1),
-  tv_spent_eur_scales = c(0, 0.1),
-  tv_spent_eur_shapes = c(0.0001, 10)
+# Calculate shape and scale for digital and TV channels
+digital_shape, digital_scale <- approx_weibull(7)
+tv_shape, tv_scale <- approx_weibull(30)
+
+# Derived parameter values for digital
+digital_shape <- digital_weibull$shape
+digital_scale <- digital_weibull$scale
+
+# Derived parameter values for TV
+tv_shape <- tv_weibull$shape
+tv_scale <- tv_weibull$scale
+
+# Define parameter ranges and fits
+alpha_range <- c(0.5, 3)
+gamma_range <- c(0.3, 1)
+
+# Assign hyperparameters with custom prefixes
+hyperparameters <- assign_hyperparameters(
+  paid_media_spends,
+  alpha_range,
+  gamma_range,
+  digital_shape,
+  digital_scale,
+  tv_shape,
+  tv_scale,
+  prefix_media = c("ga_", "google_", "meta_", "bing_"),
+  prefix_tv = "tv_spent_"
 )
 
 # Get the column names for potential independent vars
