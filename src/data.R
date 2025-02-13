@@ -79,7 +79,7 @@ assign_hyperparameters <- function(
       hyperparameters[[paste0(media, "_scales")]] <- c(0, tv_scale)
     }
   }
-  for (oranic in organic_vars) {
+  for (organic in organic_vars) {
       # Set hyperparameters for digital channels
       hyperparameters[[paste0(organic, "_alphas")]] <- alpha_range
       hyperparameters[[paste0(organic, "_gammas")]] <- gamma_range

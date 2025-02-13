@@ -23,21 +23,49 @@ system(fetch_data)
 data_path <- "data/data.csv"
 df <- read.csv(data_path)
 
+print("Columns in df:")
+print(names(df))
+
 df <- fill_missing_days(df)
 
 validation_date_range = c("2024-10-01", "2024-11-01")
 prediction_date_range = c("2025-02-01", "2025-03-01")
 
+# Programmatically define variable types
+# 1. Get the column names for potential independent vars
+column_names <- names(df)
+independent_columns <- setdiff(column_names, c("date", "gmv", "management_region", "country"))
+
+# 2. Identify columns with no variance
+no_variance_cols <- independent_columns[sapply(df[independent_columns], function(x) length(unique(x)) == 1)]
+print(paste("Columns with no variance:", paste(no_variance_cols, collapse = ", ")))
+independent_columns <- setdiff(independent_columns, no_variance_cols) # Remove columns with no variance
+
+# 3. Define variables based on column names
+paid_media_spends <- independent_columns[grepl("_cost$", independent_columns)]
+paid_media_vars <- paid_media_spends
+print(paste("paid_media_vars:", paste(paid_media_vars, collapse = ", ")))
+organic_vars <- independent_columns[grepl("_sessions$", independent_columns)]
+print(paste("organic_vars:", paste(organic_vars, collapse = ", ")))
+context_vars <- setdiff(independent_columns, c(paid_media_spends, organic_vars))
+print(paste("context_vars:", paste(context_vars, collapse = ", ")))
+factor_vars <- intersect(c("tv_is_on"), independent_columns) # Ensure tv_is_on is still available
+print(paste("factor_vars:", paste(factor_vars, collapse = ", ")))
+
+
+# Define hyperparameter for paid_media_vars and organic_vars
 # Calculate shape and scale for digital and TV channels
 digital_weibull <- approx_weibull(7)
 organic_weibull <- approx_weibull(7)
 tv_weibull <- approx_weibull(30)
 
+# Derived parameter values for digital, TV and organic
 digital_shape <- digital_weibull$shape
-digital_scale <- digital_weibull$scale
+# bing_competitor_cost_scales's hyperparameter must have upper bound <=1
+digital_scale <- pmin(digital_weibull$scale, 1) # Ensure upper bound of 1
 
 organic_shape <- organic_weibull$shape
-organic_scale <- organic_weibull$scale
+organic_scale <- pmin(organic_weibull$scale, 1)
 
 tv_shape <- tv_weibull$shape
 tv_scale <- tv_weibull$scale
@@ -62,7 +90,11 @@ hyperparameters <- assign_hyperparameters(
   prefix_tv = "tv_spent_"
 )
 
-
+# Print the assigned hyperparameters for debugging
+print("Assigned hyperparameters:")
+for (name in names(hyperparameters)) {
+  print(paste(name, ":", paste(hyperparameters[[name]], collapse = ", ")))
+}
 
 InputCollect <- robyn_inputs(
   dt_input = df,
@@ -75,13 +107,11 @@ InputCollect <- robyn_inputs(
   prophet_vars = c("trend","season", "weekday"),  #"trend","season", "weekday" & "holiday"
   prophet_country = country, # input one country. dt_prophet_holidays includes 59 countries by default
 
-
-  context_vars = c("uploads_private", "uploads_commercial", "crossborder_sales", "n_distinct_searches", "app_installs", "android_installs", "apple_installs", "uploads_total", "cum_private_uploads14day", "cum_commercial_uploads14day", "avg_buycycle_fee", "discount_amt", "n_searches", "tv_is_on"),
-  paid_media_spends = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "google_ads_dg"),
-  paid_media_vars = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "google_ads_dg"),
-
-  organic_vars = c(),
-  factor_vars = c("tv_is_on"), # force variables in context_vars or organic_vars to be categorical
+  context_vars = context_vars,
+  paid_media_spends = paid_media_spends,
+  paid_media_vars = paid_media_vars,
+  organic_vars = organic_vars,
+  factor_vars = factor_vars,
   hyperparameters=hyperparameters,
   adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
@@ -89,7 +119,6 @@ InputCollect <- robyn_inputs(
 hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
 
 InputCollect <- robyn_inputs(InputCollect = InputCollect)
-
 
 OutputModel <- robyn_run(
   InputCollect = InputCollect,
@@ -168,13 +197,11 @@ InputCollectPredict <- robyn_inputs(
   prophet_vars = c("trend","season", "weekday"),  #"trend","season", "weekday" & "holiday"
   prophet_country = country, # input one country. dt_prophet_holidays includes 59 countries by default
 
-
-  context_vars = c("uploads_private", "uploads_commercial", "crossborder_sales", "n_distinct_searches", "app_installs", "android_installs", "apple_installs", "uploads_total", "cum_private_uploads14day", "cum_commercial_uploads14day", "avg_buycycle_fee", "discount_amt", "n_searches", "tv_is_on"),
-  paid_media_spends = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "google_ads_dg"),
-  paid_media_vars = c("ga_brand_search_spend", "ga_demand_search_spend", "ga_demand_pmax_spend", "ga_demand_shopping_spend", "ga_supply_search_spend", "meta_brand_spend", "meta_supply_spend", "meta_demand_spend", "tv_spent_eur", "google_ads_dg"),
-
-  organic_vars = c(),
-  factor_vars = c("tv_is_on"), # force variables in context_vars or organic_vars to be categorical
+  context_vars = context_vars,
+  paid_media_spends = paid_media_spends,
+  paid_media_vars = paid_media_vars,
+  organic_vars = organic_vars,
+  factor_vars = factor_vars,
   hyperparameters=hyperparameters,
   adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
 )
