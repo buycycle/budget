@@ -179,11 +179,12 @@ HistoricAllocatorCollect <- robyn_allocator(
 )
 
 # Predict future values
-PredictedData <- robyn_predict(
+PredictedData <- predict_data(
   InputCollect = InputCollect,
   OutputCollect = OutputCollect,
   select_model = select_model,
-  date_range = prediction_date_range
+  date_range = prediction_date_range,
+  monthly_targets =monthly_targets
 )
 
 InputCollectPredict <- robyn_inputs(

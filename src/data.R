@@ -89,3 +89,17 @@ assign_hyperparameters <- function(
 
   return(hyperparameters)
 }
+
+
+predict_data <- function(
+  InputCollect,
+  OutputCollect,
+  select_model,
+  prediction_date_range,
+  monthly_targets
+){
+    return(pass)
+
+
+}
+
