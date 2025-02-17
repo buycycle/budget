@@ -103,7 +103,7 @@ predict_data <- function(
   #' @param InputCollect An InputCollect object containing historical data.
   #' @param OutputCollect An OutputCollect object containing Robyn model output.
   #' @param select_model The index or name of the selected Robyn model.
-  #' @param prediction_date_range A vector of Date objects representing the prediction period.
+  #' @param prediction_date_range A vector of Date objects representing the start date and end date. 
   #' @param monthly_targets A data frame with monthly spend targets for each channel.
   #'
   #' @return A data frame with daily spend for each channel in the prediction period.
@@ -123,7 +123,7 @@ predict_data <- function(
 
   # 1.3 Number of days in reference and prediction months
   n_days_reference <- nrow(reference_month)
-  n_days_prediction <- length(prediction_date_range)
+  n_days_prediction <- as.numeric(max(prediction_date_range) - min(prediction_date_range)) + 1
 
   # 1.4 Adjust reference_month to match the length of prediction_date_range
   if (n_days_reference < n_days_prediction) {
