@@ -7,7 +7,6 @@ library(reticulate)
 
 
 source("src/data.R")
-source("src/predict.R")
 
 country <- "DE"
 management_region <- "DACH"
@@ -87,7 +86,7 @@ hyperparameters <- assign_hyperparameters(
   tv_shape,
   tv_scale,
   prefix_media = c("ga_", "google_", "meta_", "bing_"),
-  prefix_tv = "tv_spent_"
+  prefix_tv = "tv_"
 )
 
 # Print the assigned hyperparameters for debugging
@@ -113,7 +112,7 @@ InputCollect <- robyn_inputs(
   organic_vars = organic_vars,
   factor_vars = factor_vars,
   hyperparameters=hyperparameters,
-  adstock = "weibull_pdf" # geometric, weibull_cdf or weibull_pdf.
+  adstock = "geometric" # geometric, weibull_cdf or weibull_pdf.
 )
 
 hyper_names(adstock = InputCollect$adstock, all_media = InputCollect$all_media)
@@ -125,7 +124,8 @@ OutputModel <- robyn_run(
   cores = 32, # Number of CPU cores to use
   iterations = 2000, # Number of iterations for the model
   trials = 5, # Number of trials for hyperparameter optimization
-  ts_validation = TRUE
+  ts_validation = TRUE,
+  train_size = 0.9
 )
 
 saveRDS(OutputModel, file = "data/OutputModel.rds")

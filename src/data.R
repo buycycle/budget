@@ -54,7 +54,7 @@ assign_hyperparameters <- function(
   tv_shape,
   tv_scale,
   prefix_media = c("ga_", "google_", "meta_", "bing_"),
-  prefix_tv = "tv_spent_"
+  prefix_tv = "tv_"
 ) {
   # Initialize hyperparameters list
   hyperparameters <- list()
@@ -69,22 +69,19 @@ assign_hyperparameters <- function(
       # Set hyperparameters for digital channels
       hyperparameters[[paste0(media, "_alphas")]] <- alpha_range
       hyperparameters[[paste0(media, "_gammas")]] <- gamma_range
-      hyperparameters[[paste0(media, "_shapes")]] <- c(0.0001, digital_shape)
-      hyperparameters[[paste0(media, "_scales")]] <- c(0, digital_scale)
+      hyperparameters[[paste0(media, "_thetas")]] <- c(0, 0.3)
     } else if (grepl(tv_pattern, media)) {
       # Set hyperparameters for TV channels
       hyperparameters[[paste0(media, "_alphas")]] <- alpha_range
       hyperparameters[[paste0(media, "_gammas")]] <- gamma_range
-      hyperparameters[[paste0(media, "_shapes")]] <- c(0.0001, tv_shape)
-      hyperparameters[[paste0(media, "_scales")]] <- c(0, tv_scale)
+      hyperparameters[[paste0(media, "_thetas")]] <- c(0, 0.7)
     }
   }
   for (organic in organic_vars) {
       # Set hyperparameters for digital channels
       hyperparameters[[paste0(organic, "_alphas")]] <- alpha_range
       hyperparameters[[paste0(organic, "_gammas")]] <- gamma_range
-      hyperparameters[[paste0(organic, "_shapes")]] <- c(0.0001, organic_shape)
-      hyperparameters[[paste0(organic, "_scales")]] <- c(0, organic_scale)
+      hyperparameters[[paste0(organic, "_thetas")]] <- c(0, 0.3)
   }
 
   return(hyperparameters)
