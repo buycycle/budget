@@ -98,93 +98,66 @@ predict_data <- function(
   prediction_date_range,
   monthly_targets
 ){
-  
-  # 1. Run Robyn Allocator on original data
-  validation_date_range <- OutputCollect$calibration_input$date_range
+  #' build daily spend for future periods based on historical data and monthly targets.
+  #'
+  #' @param InputCollect An InputCollect object containing historical data.
+  #' @param OutputCollect An OutputCollect object containing Robyn model output.
+  #' @param select_model The index or name of the selected Robyn model.
+  #' @param prediction_date_range A vector of Date objects representing the prediction period.
+  #' @param monthly_targets A data frame with monthly spend targets for each channel.
+  #'
+  #' @return A data frame with daily spend for each channel in the prediction period.
 
-  AllocatorCollect <- robyn_allocator(
-    InputCollect = InputCollect,
-    OutputCollect = OutputCollect,
-    select_model = select_model,
-    date_range = validation_date_range,
-    total_budget = NULL,
-    channel_constr_low = 0.5,
-    channel_constr_up = 1.5,
-    channel_constr_multiplier = 3,
-    scenario = "max_historical_response",
-    export = FALSE
-  )
+  # 1. Get the reference month data
+  # 1.1 Extract Reference Month and Year
+  ref_month <- month(min(prediction_date_range)) - 1
+  ref_year <- year(min(prediction_date_range))
+  if (ref_month == 0) {  # Handle January
+    ref_month <- 12
+    ref_year <- ref_year - 1
+  }
 
-  # 2. Calculate Scaling Factor
-  scaling_factor <- monthly_targets / sum(AllocatorCollect$opt_alloc$optimised_spend)
-
-  # 3. Extract Optimized Spend and Scale
-  scaled_allocation <- AllocatorCollect$opt_alloc %>%
-    mutate(optimised_spend = optimised_spend * scaling_factor)
-
-  # 4. Extract Reference Month Data
-  # Get previous month's data
+  # 1.2 Get previous month's data
   reference_month <- InputCollect$all_data %>%
-    filter(
-      month(date) == month(min(prediction_date_range)) - 1,  
-      year(date) == year(min(prediction_date_range))        
-    )
+    filter(month(date) == ref_month, year(date) == ref_year)
 
-  # If no data for the previous month in the same year, use previous year
-  if (nrow(reference_month) == 0){
-      reference_month <- InputCollect$all_data %>%
-      filter(
-        month(date) == 12,
-        year(date) < year(min(prediction_date_range)) - 1
-      )
+  # 1.3 Number of days in reference and prediction months
+  n_days_reference <- nrow(reference_month)
+  n_days_prediction <- length(prediction_date_range)
+
+  # 1.4 Adjust reference_month to match the length of prediction_date_range
+  if (n_days_reference < n_days_prediction) {
+    # Duplicate last day's data to extend
+    extra_days <- n_days_prediction - n_days_reference
+    last_row <- reference_month[nrow(reference_month), ]  # Get the last row
+    duplicate_rows <- do.call("rbind", replicate(extra_days, last_row, simplify = FALSE))  # Duplicate the last row
+    reference_month <- rbind(reference_month, duplicate_rows)  # Add the duplicated rows
+  } else if (n_days_reference > n_days_prediction) {
+    # Cut off extra days
+    reference_month <- reference_month[1:n_days_prediction, ]
   }
 
-  # 5. Calculate the daily proportions
-  if (nrow(reference_month) > 0){
-    # Number of days in reference and prediction months
-    n_days_reference <- nrow(reference_month)
-    n_days_prediction <- length(prediction_date_range)
+  # 1.5 Ensure the dates in reference_month match prediction_date_range
+  reference_month$date <- prediction_date_range
 
-    # Adjust reference_month to match the length of prediction_date_range
-    if (n_days_reference < n_days_prediction) {
-      # Duplicate last day's data to extend
-      extra_days <- n_days_prediction - n_days_reference
-      last_row <- reference_month[nrow(reference_month), ]  # Get the last row
-      duplicate_rows <- do.call("rbind", replicate(extra_days, last_row, simplify = FALSE))  # Duplicate the last row
-      reference_month <- rbind(reference_month, duplicate_rows)  # Add the duplicated rows
-    } else if (n_days_reference > n_days_prediction) {
-      # Cut off extra days
-      reference_month <- reference_month[1:n_days_prediction, ]
-    }
+  # 2. Calculate the daily proportions
+  # 2.1 Get channel names with valid targets
+  channel_cols <- names(monthly_targets)[!is.na(monthly_targets) & monthly_targets > 0]  # Only channels with targets
 
-    # Ensure the dates in reference_month match prediction_date_range
-    reference_month$date <- prediction_date_range
+  # 2.2 Calculate the daily proportions (only for target columns)
+  daily_proportions <- reference_month %>%
+    mutate(across(
+      all_of(channel_cols),  # Apply only to target columns
+      ~.x / sum(.x)
+    ))
 
-    # calculate the daily proportions
-    daily_proportions <- reference_month %>%
-      mutate(across(
-        all_of(channel_cols),
-        ~.x / sum(.x)
-      )) %>%
-      select(date, all_of(channel_cols)) 
 
-  } else {
-    # If no reference month data, distribute evenly
-    daily_proportions <- tibble(
-      date = prediction_date_range,
-    !!!setNames(as.list(rep(1 / length(prediction_date_range), length(channel_cols))), channel_cols)
-    )
-  }
-
-  # 6. Distribute the optimized spend proportionally, by channel
+  # 3. Distribute the optimized spend proportionally, by channel
   future_data <- daily_proportions %>%
     mutate(across(
       all_of(channel_cols),
-      ~.x * scaled_allocation$optimised_spend[match(cur_column(), scaled_allocation$channel)]
-    )) %>%
-    select(date, all_of(channel_cols)) %>%
-    mutate(Total = rowSums(across(where(is.numeric)))) %>%
-    bind_rows(summarize(., across(where(is.numeric), sum)))
+      ~.x * monthly_targets[[cur_column()]]  # Overwrite the existing columns
+    ))
  
   return(future_data)
 }
