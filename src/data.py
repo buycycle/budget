@@ -1,12 +1,11 @@
 import sys
 import pandas as pd
 from buycycle.data import snowflake_sql_db_read
-def fetch_and_save_data(country, management_region, table_name, db_name="DB", output_file="data/data.csv"):
+def fetch_and_save_data(country, table_name, db_name="DB", output_file="data/data.csv"):
     query = f"""
     SELECT *
     FROM {table_name}
-    WHERE management_region = '{management_region}'
-    AND country = '{country}'
+    WHERE country = '{country}'
     ORDER BY date ASC
     """
     df = snowflake_sql_db_read(query=query, DB=db_name, driver="snowflake")

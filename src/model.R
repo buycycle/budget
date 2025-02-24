@@ -11,7 +11,12 @@ source("src/data.R")
 country <- "DE"
 management_region <- "DACH"
 
+countries <- list("DE",
+                 "FR".
+                 "SEU",
+                 "US")
 
+for (country in names(countries) {
 
 # Construct the command to call the Python script
 fetch_data <- sprintf("python src/data.py %s %s", country, management_region)
@@ -28,7 +33,8 @@ print(names(df))
 df <- fill_missing_days(df)
 
 validation_date_range = c("2024-10-01", "2024-11-01")
-prediction_date_range = c("2025-02-01", "2025-03-01")
+reference_data_range = c("2025-02-01", "2025-03-01")
+prediction_date_range = c("2025-03-01", "2025-04-01")
 
 # Programmatically define variable types
 # 1. Get the column names for potential independent vars
@@ -177,6 +183,8 @@ HistoricAllocatorCollect <- robyn_allocator(
   scenario = "max_historical_response",
   export = TRUE
 )
+
+}
 
 # Predict future values
 PredictedData <- predict_data(
