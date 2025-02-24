@@ -11,3 +11,9 @@ background.md
 
 .RData
 .Rhistory
+
+# Ignore folders that start with "Robyn_"
+Robyn_*/
+
+# ignore outputs of test files
+tests/testthat/outputs

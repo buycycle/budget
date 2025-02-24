@@ -28,12 +28,12 @@ print(names(df))
 df <- fill_missing_days(df)
 
 validation_date_range = c("2024-10-01", "2024-11-01")
-prediction_date_range = c("2025-02-01", "2025-03-01")
+prediction_date_range = c("2025-03-01", "2025-04-01")
 
 # Programmatically define variable types
 # 1. Get the column names for potential independent vars
 column_names <- names(df)
-independent_columns <- setdiff(column_names, c("date", "gmv", "management_region", "country"))
+independent_columns <- setdiff(column_names, c("date", "national_gmv", "crossborder_gmv", "management_region", "country"))
 
 # 2. Identify columns with no variance
 no_variance_cols <- independent_columns[sapply(df[independent_columns], function(x) length(unique(x)) == 1)]
@@ -100,7 +100,7 @@ InputCollect <- robyn_inputs(
   dt_holidays = dt_prophet_holidays,
   date_var = "date",
 
-  dep_var = "gmv", # there should be only one dependent variable
+  dep_var = "crossborder_gmv", # there should be only one dependent variable
   dep_var_type = "revenue", # "revenue" (roi) or "conversion" (cpa)
 
   prophet_vars = c("trend","season", "weekday", "holiday"),
@@ -183,7 +183,7 @@ PredictedData <- predict_data(
   InputCollect = InputCollect,
   OutputCollect = OutputCollect,
   select_model = select_model,
-  date_range = prediction_date_range,
+  prediction_date_range = prediction_date_range,
   monthly_targets =monthly_targets
 )
 
@@ -192,7 +192,7 @@ InputCollectPredict <- robyn_inputs(
   dt_holidays = dt_prophet_holidays,
   date_var = "date",
 
-  dep_var = "gmv", # there should be only one dependent variable
+  dep_var = "crossborder_gmv", # there should be only one dependent variable
   dep_var_type = "revenue", # "revenue" (roi) or "conversion" (cpa)
 
   prophet_vars = c("trend","season", "weekday"),  #"trend","season", "weekday" & "holiday"
