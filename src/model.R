@@ -24,7 +24,7 @@ fetch_data <- sprintf("python src/data.py %s %s", country, management_region)
 system(fetch_data)
 
 # read csv snowflake export
-data_path <- "data/data.csv"
+data_path <- "data/data_campaigne.csv"
 df <- read.csv(data_path)
 
 print("Columns in df:")
@@ -109,8 +109,8 @@ InputCollect <- robyn_inputs(
   dep_var = "gmv", # there should be only one dependent variable
   dep_var_type = "revenue", # "revenue" (roi) or "conversion" (cpa)
 
-  prophet_vars = c("trend","season", "weekday"),  #"trend","season", "weekday" & "holiday"
-  prophet_country = country, # input one country. dt_prophet_holidays includes 59 countries by default
+  prophet_vars = c("trend","season", "weekday", "holiday"),
+  prophet_country = country,
 
   context_vars = context_vars,
   paid_media_spends = paid_media_spends,
