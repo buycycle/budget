@@ -106,33 +106,45 @@ predict_data <- function(
   #'
   #' @return A data frame with daily spend for each channel in the prediction period.
 
+  if (is.null(InputCollect$dt_input)) {
+    stop("InputCollect$dt_input is NULL. Please provide historical data.")
+    returb(NULL)
+  }
+  df <- InputCollect$dt_input
+
   # 1. Get the reference month data
   # 1.1 take the previous month as reference month
-  ref_month <- month(min(prediction_date_range)) - 1
-  ref_year <- year(min(prediction_date_range))
+  pred_month <- month(min(prediction_date_range))
+  pred_year <- year(min(prediction_date_range))
+
+  ref_month <- pred_month - 1
+  ref_year <- pred_year
   if (ref_month == 0) {  # Handle January
     ref_month <- 12
     ref_year <- ref_year - 1
   }
-  reference_month_data <- InputCollect$all_data %>%
+  reference_month_data <- df %>%
     filter(month(date) == ref_month, year(date) == ref_year)
 
   # 1.2 if previous data lacks, get the last available month with data
   if (nrow(reference_month_data) == 0) {
-    last_available_date <- max(InputCollect$all_data$date)
+    last_available_date <- max(df$date)
     ref_month <- month(last_available_date)
     ref_year <- year(last_available_date)
-    reference_month_data <- InputCollect$all_data %>%
+    reference_month_data <- df %>%
       filter(month(date) == ref_month, year(date) == ref_year)
   }
 
   # 1.3 Shift the dates in reference_month_data by one month and ensure valid dates
   reference_month_data <- reference_month_data %>%
-    mutate(date = date %m+% months(1)) %>%
+    mutate(date = as.Date(paste(pred_year, pred_month, day(date), sep = "-"))) %>%
     filter(!is.na(date))  # Remove invalid dates (e.g., February 29th in non-leap years)
 
   # 1.4 Duplicate data for missing date to match the length of prediction_date_range
-  if (ref_month %in% c(1, 3, 5, 7, 8, 10, 12)) {
+  n_days_prediction <- n_days_prediction <- as.numeric(difftime(as.Date(prediction_date_range[2]), as.Date(prediction_date_range[1]), units = "days")) 
+  n_days_reference <- as.numeric(difftime(max(reference_month_data$date), min(reference_month_data$date), units = "days")) + 1
+
+  if (n_days_prediction > n_days_reference) {
     last_day <- max(reference_month_data$date)
     last_day_rows <- reference_month_data %>% filter(date == last_day)
     extra_days <- 31 - day(last_day)
