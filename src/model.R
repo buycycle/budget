@@ -11,12 +11,13 @@ source("src/data.R")
 country <- "DE"
 management_region <- "DACH"
 
-countries <- list("DE",
-                 "FR".
-                 "SEU",
-                 "US")
+countries <- list("US",
+                 "IT",
+                 "ES",
+                 "FR",
+                 "DE")
 
-for (country in names(countries) {
+for (country in countries) {
 
 # Construct the command to call the Python script
 fetch_data <- sprintf("python src/data.py %s %s", country, management_region)
@@ -24,7 +25,7 @@ fetch_data <- sprintf("python src/data.py %s %s", country, management_region)
 system(fetch_data)
 
 # read csv snowflake export
-data_path <- "data/data_campaigne.csv"
+data_path <- "data/data.csv"
 df <- read.csv(data_path)
 
 print("Columns in df:")
@@ -127,7 +128,7 @@ InputCollect <- robyn_inputs(InputCollect = InputCollect)
 
 OutputModel <- robyn_run(
   InputCollect = InputCollect,
-  cores = 32, # Number of CPU cores to use
+  cores = 6, # Number of CPU cores to use
   iterations = 2000, # Number of iterations for the model
   trials = 5, # Number of trials for hyperparameter optimization
   ts_validation = TRUE,
@@ -143,7 +144,7 @@ OutputCollect <- robyn_outputs(
   clusters = TRUE, # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
   plot_pareto = TRUE, # Set to FALSE to deactivate plotting and saving model one-pagers
   plot_folder = "plot/", # path for plots export
-  export = TRUE # this will create files locally
+  export = FALSE # this will create files locally
 )
 
 
@@ -168,7 +169,7 @@ if(length(select_model) == 0) {
 print(paste("Automatically selected model:", select_model))
 
 #### Since 3.7.1: JSON export and import (faster and lighter than RDS files)
-ExportedModel <- robyn_write(InputCollect, OutputCollect, select_model)
+#ExportedModel <- robyn_write(InputCollect, OutputCollect, select_model)
 
 #run historic max_response Budget Allocator.
 HistoricAllocatorCollect <- robyn_allocator(
