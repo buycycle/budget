@@ -4,8 +4,6 @@ library(Robyn)
 library(reticulate)
 
 
-
-
 source("src/data.R")
 
 country <- "DE"
@@ -17,7 +15,16 @@ countries <- list("US",
                  "FR",
                  "DE")
 
+gmv_targets <- c(US = 100000,
+                 IT = 150000,
+                 ES= 120000,
+                 FR= 200000,
+                 DE= 200000)
+
+# Loop over the countries and map the GMV target
 for (country in countries) {
+  # Access the GMV target for the current country
+  gmv_target <- gmv_targets[[country]]
 
 # Construct the command to call the Python script
 fetch_data <- sprintf("python src/data.py %s %s", country, management_region)
@@ -185,7 +192,6 @@ HistoricAllocatorCollect <- robyn_allocator(
   export = TRUE
 )
 
-}
 
 # Predict future values
 PredictedData <- predict_data(
@@ -227,8 +233,9 @@ FutureAllocatorCollect <- robyn_allocator(
   scenario = "max_response",
   channel_constr_low = 0.5,
   channel_constr_up = 1.5,
-  total_budget = 150000,
+  total_budget = NULL,
   date_range = prediction_date_range,
   export = TRUE,
   dt_input = PredictedData # Use predicted data for allocation
 )
+}
