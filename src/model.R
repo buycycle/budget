@@ -46,13 +46,13 @@ print(names(df))
 df <- fill_missing_days(df)
 
 validation_date_range = c("2024-10-01", "2024-11-01")
-reference_data_range = c("2025-02-01", "2025-03-01")
-prediction_date_range = c("2025-03-01", "2025-04-01")
+reference_data_range = c("2025-02-01", "2025-02-28")
+prediction_date_range = c("2025-03-01", "2025-03-31")
 
 # Programmatically define variable types
 # 1. Get the column names for potential independent vars
 column_names <- names(df)
-independent_columns <- setdiff(column_names, c("date", "national_gmv", "crossborder_gmv", "management_region", "country"))
+independent_columns <- setdiff(column_names, c("date", "gmv", "national_gmv", "crossborder_gmv", "management_region", "country"))
 
 # 2. Identify columns with no variance
 no_variance_cols <- independent_columns[sapply(df[independent_columns], function(x) length(unique(x)) == 1)]
@@ -119,7 +119,7 @@ InputCollect <- robyn_inputs(
   dt_holidays = dt_prophet_holidays,
   date_var = "date",
 
-  dep_var = "crossborder_gmv", # there should be only one dependent variable
+  dep_var = "gmv", # there should be only one dependent variable
   dep_var_type = "revenue", # "revenue" (roi) or "conversion" (cpa)
 
   prophet_vars = c("trend","season", "weekday", "holiday"),
@@ -140,9 +140,9 @@ InputCollect <- robyn_inputs(InputCollect = InputCollect)
 
 OutputModel <- robyn_run(
   InputCollect = InputCollect,
-  cores = 6, # Number of CPU cores to use
+  cores = 8, # Number of CPU cores to use
   iterations = 2000, # Number of iterations for the model
-  trials = 5, # Number of trials for hyperparameter optimization
+  trials = 1, # Number of trials for hyperparameter optimization, should be >= 5
   ts_validation = TRUE,
   train_size = 0.9
 )
@@ -197,8 +197,6 @@ HistoricAllocatorCollect <- robyn_allocator(
   export = TRUE
 )
 
-}
-
 # Predict future values
 PredictedData <- get_future_data(
   historical_df = df,
@@ -206,12 +204,13 @@ PredictedData <- get_future_data(
   target_gmv = gmv_target
 )
 
+print("ran future data generation")
 InputCollectPredict <- robyn_inputs(
   dt_input = PredictedData,
   dt_holidays = dt_prophet_holidays,
   date_var = "date",
 
-  dep_var = "crossborder_gmv", # there should be only one dependent variable
+  dep_var = "gmv", # there should be only one dependent variable
   dep_var_type = "revenue", # "revenue" (roi) or "conversion" (cpa)
 
   prophet_vars = c("trend","season", "weekday"),  #"trend","season", "weekday" & "holiday"
@@ -242,3 +241,4 @@ FutureAllocatorCollect <- robyn_allocator(
   export = TRUE,
   dt_input = PredictedData # Use predicted data for allocation
 )
+}
