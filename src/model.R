@@ -4,14 +4,27 @@ library(Robyn)
 library(reticulate)
 
 
-
-
 source("src/data.R")
 
 country <- "DE"
 management_region <- "DACH"
 
+countries <- list("US",
+                 "IT",
+                 "ES",
+                 "FR",
+                 "DE")
 
+gmv_targets <- c(US = 100000,
+                 IT = 150000,
+                 ES= 120000,
+                 FR= 200000,
+                 DE= 200000)
+
+# Loop over the countries and map the GMV target
+for (country in countries) {
+  # Access the GMV target for the current country
+  gmv_target <- gmv_targets[[country]]
 
 # Construct the command to call the Python script
 fetch_data <- sprintf("python src/data.py %s %s", country, management_region)
@@ -19,7 +32,7 @@ fetch_data <- sprintf("python src/data.py %s %s", country, management_region)
 system(fetch_data)
 
 # read csv snowflake export
-data_path <- "data/data_campaigne.csv"
+data_path <- "data/data.csv"
 df <- read.csv(data_path)
 
 print("Columns in df:")
@@ -28,6 +41,7 @@ print(names(df))
 df <- fill_missing_days(df)
 
 validation_date_range = c("2024-10-01", "2024-11-01")
+reference_data_range = c("2025-02-01", "2025-03-01")
 prediction_date_range = c("2025-03-01", "2025-04-01")
 
 # Programmatically define variable types
@@ -121,7 +135,7 @@ InputCollect <- robyn_inputs(InputCollect = InputCollect)
 
 OutputModel <- robyn_run(
   InputCollect = InputCollect,
-  cores = 32, # Number of CPU cores to use
+  cores = 6, # Number of CPU cores to use
   iterations = 2000, # Number of iterations for the model
   trials = 5, # Number of trials for hyperparameter optimization
   ts_validation = TRUE,
@@ -137,7 +151,7 @@ OutputCollect <- robyn_outputs(
   clusters = TRUE, # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
   plot_pareto = TRUE, # Set to FALSE to deactivate plotting and saving model one-pagers
   plot_folder = "plot/", # path for plots export
-  export = TRUE # this will create files locally
+  export = FALSE # this will create files locally
 )
 
 
@@ -162,7 +176,7 @@ if(length(select_model) == 0) {
 print(paste("Automatically selected model:", select_model))
 
 #### Since 3.7.1: JSON export and import (faster and lighter than RDS files)
-ExportedModel <- robyn_write(InputCollect, OutputCollect, select_model)
+#ExportedModel <- robyn_write(InputCollect, OutputCollect, select_model)
 
 #run historic max_response Budget Allocator.
 HistoricAllocatorCollect <- robyn_allocator(
@@ -178,11 +192,12 @@ HistoricAllocatorCollect <- robyn_allocator(
   export = TRUE
 )
 
+
 # Predict future values
 PredictedData <- get_future_data(
   historical_df = df,
   prediction_date_range = prediction_date_range,
-  target_gmv = 12000000
+  target_gmv = gmv_target
 )
 
 InputCollectPredict <- robyn_inputs(
@@ -216,8 +231,9 @@ FutureAllocatorCollect <- robyn_allocator(
   scenario = "max_response",
   channel_constr_low = 0.5,
   channel_constr_up = 1.5,
-  total_budget = 150000,
+  total_budget = NULL,
   date_range = prediction_date_range,
   export = TRUE,
   dt_input = PredictedData # Use predicted data for allocation
 )
+}
