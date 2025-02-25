@@ -178,7 +178,7 @@ predict_data <- function(
 
 
 get_future_data <- function(
-  InputCollect,
+  historical_df,
   prediction_date_range,
   target_gmv = 12000000
 ){
@@ -192,11 +192,10 @@ get_future_data <- function(
   #'
   #' @return A data frame with daily spend for each channel in the prediction period.
 
-  if (is.null(InputCollect$dt_input)) {
-    stop("InputCollect$dt_input is NULL. Please provide historical data.")
-    returb(NULL)
+  if (is.null(historical_df)) {
+    stop("historical_df is NULL. Please provide historical data.")
+    return(NULL)
   }
-  df <- InputCollect$dt_input
 
   # 1. Get the reference month data
   # 1.1 take the previous month as reference month
@@ -209,15 +208,15 @@ get_future_data <- function(
     ref_month <- 12
     ref_year <- ref_year - 1
   }
-  reference_month_data <- df %>%
+  reference_month_data <- historical_df %>%
     filter(month(date) == ref_month, year(date) == ref_year)
 
   # 1.2 if previous data lacks, get the last available month with data
   if (nrow(reference_month_data) == 0) {
-    last_available_date <- max(df$date)
+    last_available_date <- max(historical_df$date)
     ref_month <- month(last_available_date)
     ref_year <- year(last_available_date)
-    reference_month_data <- df %>%
+    reference_month_data <- historical_df %>%
       filter(month(date) == ref_month, year(date) == ref_year)
   }
 
