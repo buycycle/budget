@@ -6,14 +6,18 @@ library(reticulate)
 
 source("src/data.R")
 
-country <- "DE"
-management_region <- "DACH"
 
 countries <- list("US",
-                 "IT",
-                 "ES",
                  "FR",
-                 "DE")
+                 "DE",
+                 "IT",
+                 "ES"
+)
+management_regions <- c(US = "NA",
+                 IT = "SEU",
+                 ES= "SEU",
+                 FR= "FRA",
+                 DE= "DACH")
 
 gmv_targets <- c(US = 100000,
                  IT = 150000,
@@ -23,6 +27,7 @@ gmv_targets <- c(US = 100000,
 
 # Loop over the countries and map the GMV target
 for (country in countries) {
+  management_region <- management_regions[[country]]
   # Access the GMV target for the current country
   gmv_target <- gmv_targets[[country]]
 
@@ -192,6 +197,7 @@ HistoricAllocatorCollect <- robyn_allocator(
   export = TRUE
 )
 
+}
 
 # Predict future values
 PredictedData <- get_future_data(
@@ -236,4 +242,3 @@ FutureAllocatorCollect <- robyn_allocator(
   export = TRUE,
   dt_input = PredictedData # Use predicted data for allocation
 )
-}
