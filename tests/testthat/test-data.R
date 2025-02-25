@@ -22,19 +22,12 @@ if (!dir.exists(output_dir)) {
 write.csv(InputCollect$dt_input, file.path(output_dir, "predict_data_original.csv"), row.names = FALSE)
 
 
-select_model <- "model_1"
-monthly_targets <- tibble(
-  target_gmv_eur = 12000000
-)
-
 # Test february prediction
 test_that("predict_data returns a data frame with the correct structure", {
-  result <- predict_data(
+  result <- get_future_data(
     InputCollect = InputCollect,
-    OutputCollect = OutputCollect,
-    select_model = select_model,
     prediction_date_range = c("2025-02-01", "2025-03-01"),
-    monthly_targets = monthly_targets
+    target_gmv = 12000000
   )
   
   expect_s3_class(result, "data.frame")
@@ -49,12 +42,10 @@ test_that("predict_data returns a data frame with the correct structure", {
 
 # Test march prediction
 test_that("predict_data returns a data frame with the correct structure", {
-  result <- predict_data(
+  result <- get_future_data(
     InputCollect = InputCollect,
-    OutputCollect = OutputCollect,
-    select_model = select_model,
     prediction_date_range = c("2025-03-01", "2025-04-01"),
-    monthly_targets = monthly_targets
+    target_gmv = 12000000
   )
   
   expect_s3_class(result, "data.frame")
@@ -65,12 +56,10 @@ test_that("predict_data returns a data frame with the correct structure", {
 
 
 test_that("predict_data scales the GMV correctly", {
-  result <- predict_data(
+  result <- get_future_data(
     InputCollect = InputCollect,
-    OutputCollect = OutputCollect,
-    select_model = select_model,
     prediction_date_range = c("2025-03-01", "2025-04-01"),
-    monthly_targets = monthly_targets
+    target_gmv = 12000000
   )
   
   total_gmv <- sum(result$crossborder_gmv)

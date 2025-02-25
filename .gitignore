@@ -17,3 +17,5 @@ Robyn_*/
 
 # ignore outputs of test files
 tests/testthat/outputs
+
+install_nevergrad.R
