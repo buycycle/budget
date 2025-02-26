@@ -7,9 +7,9 @@ library(reticulate)
 source("src/data.R")
 
 
-countries <- list("US",
+countries <- list("DE",
                  "FR",
-                 "DE",
+                 "US",
                  "IT",
                  "ES"
 )

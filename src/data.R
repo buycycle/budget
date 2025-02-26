@@ -240,7 +240,7 @@ get_future_data <- function(
   }
 
   # Calculate the daily proportions based on the target GMV
-  scaler <- target_gmv / sum(reference_month_data$crossborder_gmv)
+  scaler <- target_gmv / sum(reference_month_data$gmv)
 
   # Distribute the optimized spend proportionally, by channel for numeric columns
   future_data <- reference_month_data %>%
