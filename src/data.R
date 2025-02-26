@@ -88,96 +88,6 @@ assign_hyperparameters <- function(
   return(hyperparameters)
 }
 
-
-predict_data <- function(
-  InputCollect,
-  OutputCollect,
-  select_model,
-  prediction_date_range,
-  monthly_targets
-){
-  #' build daily spend for future periods based on historical data and monthly targets.
-  #'
-  #' @param InputCollect An InputCollect object containing historical data.
-  #' @param OutputCollect An OutputCollect object containing Robyn model output.
-  #' @param select_model The index or name of the selected Robyn model.
-  #' @param prediction_date_range A vector of Date objects representing the start date and end date. ex: february 2025 -> c("2025-02-01", "2025-03-01")
-  #' @param monthly_targets A data frame with monthly spend targets for each channel.
-  #'
-  #' @return A data frame with daily spend for each channel in the prediction period.
-
-  if (is.null(InputCollect$dt_input)) {
-    stop("InputCollect$dt_input is NULL. Please provide historical data.")
-    returb(NULL)
-  }
-  df <- InputCollect$dt_input
-
-  # 1. Get the reference month data
-  # 1.1 take the previous month as reference month
-  pred_month <- month(min(prediction_date_range))
-  pred_year <- year(min(prediction_date_range))
-
-  ref_month <- pred_month - 1
-  ref_year <- pred_year
-  if (ref_month == 0) {  # Handle January
-    ref_month <- 12
-    ref_year <- ref_year - 1
-  }
-  reference_month_data <- df %>%
-    filter(month(date) == ref_month, year(date) == ref_year)
-
-  # 1.2 if previous data lacks, get the last available month with data
-  if (nrow(reference_month_data) == 0) {
-    last_available_date <- max(df$date)
-    ref_month <- month(last_available_date)
-    ref_year <- year(last_available_date)
-    reference_month_data <- df %>%
-      filter(month(date) == ref_month, year(date) == ref_year)
-  }
-
-  # 1.3 Shift the dates in reference_month_data by one month and ensure valid dates
-  reference_month_data <- reference_month_data %>%
-    mutate(date = as.Date(paste(pred_year, pred_month, day(date), sep = "-"))) %>%
-    filter(!is.na(date))  # Remove invalid dates (e.g., February 29th in non-leap years)
-
-  # 1.4 Duplicate data for missing date to match the length of prediction_date_range
-  n_days_prediction <- n_days_prediction <- as.numeric(difftime(as.Date(prediction_date_range[2]), as.Date(prediction_date_range[1]), units = "days"))
-  n_days_reference <- as.numeric(difftime(max(reference_month_data$date), min(reference_month_data$date), units = "days")) + 1
-
-  if (n_days_prediction > n_days_reference) {
-    last_day <- max(reference_month_data$date)
-    last_day_rows <- reference_month_data %>% filter(date == last_day)
-    extra_days <- 31 - day(last_day)
-
-    for (i in 1:extra_days) {
-      new_rows <- last_day_rows
-      new_rows$date <- last_day + i
-      reference_month_data <- rbind(reference_month_data, new_rows)
-    }
-  }
-
-  # 2. Calculate the daily proportions based on the gmv target
-  # 2.1 Extract the target GMV from the monthly_targets data
-  target_gmv = monthly_targets$target_gmv_eur
-  if (is.null(target_gmv)) {
-    target_gmv = 12000000
-  }
-
-  # 2.2 Calculate the scaler for each channel
-  scaler <- target_gmv / sum(reference_month_data$gmv)
-
-  # 3. Distribute the optimized spend proportionally, by channel
-  future_data <- reference_month_data %>%
-    mutate(across(
-      -date,
-      ~.x * scaler  # Overwrite the existing columns
-    ))
-
-  print(future_data)
-  return(future_data)
-}
-
-
 get_future_data <- function(
   historical_df,
   prediction_date_range,
@@ -195,61 +105,60 @@ get_future_data <- function(
     stop("historical_df is NULL. Please provide historical data.")
     return(NULL)
   }
+  
+  # Function to extend a month's data, df should be complete data of the month
+  extend_month_data <- function(df) {
+    last_date <- max(df$date)
+    target_month_start <- floor_date(last_date + days(1), "month")
+    target_month_end <- target_month_start + months(1) - days(1)  # floor_date removed
 
-  # 1. Get the reference month data
-  pred_month <- month(min(prediction_date_range))
-  pred_year <- year(min(prediction_date_range))
+    last_month_data <- df[month(df$date) == month(last_date) & year(df$date) == year(last_date), ]
 
-  ref_month <- pred_month - 1
-  ref_year <- pred_year
-  if (ref_month == 0) {
-    ref_month <- 12
-    ref_year <- ref_year - 1
+    target_days <- seq(target_month_start, target_month_end, by = "day")
+
+    extended_data <- data.frame()
+    for (i in 1:length(target_days)) {
+      row_index <- min(i, nrow(last_month_data))  
+      extended_data <- rbind(extended_data, last_month_data[row_index, ])
+      extended_data[i, "date"] <- target_days[i]
+    }
+
+    complete_df <- rbind(df, extended_data)
+    return(complete_df)
   }
-  reference_month_data <- historical_df %>%
-    filter(month(date) == ref_month, year(date) == ref_year)
 
-  # If previous month data is not available, use the last available month
-  if (nrow(reference_month_data) == 0) {
-    last_available_date <- max(historical_df$date)
-    ref_month <- month(last_available_date)
-    ref_year <- year(last_available_date)
-    reference_month_data <- historical_df %>%
-      filter(month(date) == ref_month, year(date) == ref_year)
-  }
+  # Fill missing days in the last month of historical data
+  last_date <- max(historical_df$date)
+  last_month_end <- floor_date(last_date, "month") + months(1) - days(1)
+  missing_days <- as.integer(last_month_end - last_date)
 
-  # Shift the dates in reference_month_data by one month
-  reference_month_data <- reference_month_data %>%
-    mutate(date = as.Date(paste(pred_year, pred_month, day(date), sep = "-"))) %>%
-    filter(!is.na(date))
-
-  # Duplicate data for missing dates
-  n_days_prediction <- as.numeric(difftime(as.Date(prediction_date_range[2]), as.Date(prediction_date_range[1]), units = "days"))
-  n_days_reference <- as.numeric(difftime(max(reference_month_data$date), min(reference_month_data$date), units = "days")) + 1
-
-  if (n_days_prediction > n_days_reference) {
-    last_day <- max(reference_month_data$date)
-    last_day_rows <- reference_month_data %>% filter(date == last_day)
-    extra_days <- 31 - day(last_day)
-
-    for (i in 1:extra_days) {
+  if (missing_days > 0) {
+    last_day_rows <- historical_df %>% filter(date == last_date)
+    for (i in 1:missing_days) {
       new_rows <- last_day_rows
-      new_rows$date <- last_day + i
-      reference_month_data <- rbind(reference_month_data, new_rows)
+      new_rows$date <- last_date + i
+      historical_df <- rbind(historical_df, new_rows)
     }
   }
 
-  # Calculate the daily proportions based on the target GMV
-  scaler <- target_gmv / sum(reference_month_data$crossborder_gmv)
+  # Fill missing months and prediction month
+  prediction_start <- as.Date(prediction_date_range[1])
+  prediction_end <- as.Date(prediction_date_range[2]) - days(1) 
 
-  # Distribute the optimized spend proportionally, by channel for numeric columns
-  future_data <- reference_month_data %>%
-    mutate(across(
-      where(is.numeric),
-      ~.x * scaler
-    ))
+  # Extend to the end of the prediction month
+  while (max(historical_df$date) < prediction_end) {  
+    historical_df <- extend_month_data(historical_df)
+  }
 
-  return(future_data)
+  # Scale based on target_gmv
+  prediction_df <- historical_df[historical_df$date >= prediction_start & historical_df$date <= prediction_end, ]
+  scaler <- target_gmv / sum(prediction_df$gmv)
+  numeric_cols <- names(prediction_df)[sapply(prediction_df, is.numeric)]
+
+  prediction_df[, numeric_cols] <- prediction_df[, numeric_cols] * scaler
+  historical_df[historical_df$date >= prediction_start & historical_df$date <= prediction_end, numeric_cols] <- prediction_df[, numeric_cols]  
+
+  return(historical_df)
 }
 
 

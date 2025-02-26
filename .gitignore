@@ -19,3 +19,5 @@ Robyn_*/
 tests/testthat/outputs
 
 install_nevergrad.R
+
+.DS_Store
