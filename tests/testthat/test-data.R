@@ -13,7 +13,9 @@ source("src/data.R")
 historical_df <- tibble(
     date = seq.Date(from = as.Date("2025-01-01"), to = as.Date("2025-02-23"), by = "day"),
     gmv = runif(54, min = 1000, max = 5000), 
-    ga_supply_search_cost = runif(54, min = 500, max = 2000) 
+    ga_supply_search_cost = runif(54, min = 500, max = 2000),
+    country = "DE",
+    management_region = "DACH" 
   )
 
 output_dir <- "tests/testthat/outputs"

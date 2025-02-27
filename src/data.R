@@ -105,6 +105,8 @@ get_future_data <- function(
     stop("historical_df is NULL. Please provide historical data.")
     return(NULL)
   }
+
+  print(names(historical_df))
   
   # Function to extend a month's data, df should be complete data of the month
   extend_month_data <- function(df) {
@@ -152,11 +154,28 @@ get_future_data <- function(
 
   # Scale based on target_gmv
   prediction_df <- historical_df[historical_df$date >= prediction_start & historical_df$date <= prediction_end, ]
-  scaler <- target_gmv / sum(prediction_df$gmv)
-  numeric_cols <- names(prediction_df)[sapply(prediction_df, is.numeric)]
 
+  # Check if the sum is valid (not NA or zero)
+  if (is.na(sum(prediction_df$gmv)) || sum(prediction_df$gmv) == 0) {
+    stop("The sum of 'gmv' in the prediction period is NA or 0. Scaling cannot be performed.")
+  } else {
+        scaler <- target_gmv / sum(prediction_df$gmv)
+  }
+
+  numeric_cols <- names(prediction_df)[sapply(prediction_df, is.numeric)]
   prediction_df[, numeric_cols] <- prediction_df[, numeric_cols] * scaler
-  historical_df[historical_df$date >= prediction_start & historical_df$date <= prediction_end, numeric_cols] <- prediction_df[, numeric_cols]  
+
+  for (col in numeric_cols) {
+    if (is.integer(historical_df[[col]])) {
+      prediction_df[[col]] <- as.integer(round(prediction_df[[col]]))
+    }
+  }
+  
+  historical_df[historical_df$date >= prediction_start & historical_df$date <= prediction_end, numeric_cols] <- prediction_df[, numeric_cols] 
+
+  if (anyNA(historical_df$country)) {
+    print("Warning: NA values found in 'country' column.")
+  }
 
   return(historical_df)
 }
