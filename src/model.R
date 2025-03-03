@@ -26,6 +26,18 @@ gmv_targets <- c(US = 200000,
 
 # Loop over the countries and map the GMV target
 for (country in countries) {
+
+    timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")  # Format: YYYYMMDD_HHMMSS
+    validation_folder <- paste0("results/", country, "_validation_", timestamp)
+    prediction_folder <- paste0("results/", country, "_predict_", timestamp)
+    if (!dir.exists(validation_folder)) {
+      dir.create(validation_folder, recursive = TRUE)
+    }
+    if (!dir.exists(prediction_folder)) {
+      dir.create(prediction_folder, recursive = TRUE)
+    }
+
+
   management_region <- management_regions[[country]]
   # Access the GMV target for the current country
   gmv_target <- gmv_targets[[country]]
@@ -198,6 +210,8 @@ for (country in countries) {
     channel_constr_up = 1.5,
     channel_constr_multiplier = 3,
     scenario = "max_historical_response",
+    plot_folder = validation_folder,
+    plot_folder_sub = "plot",
     export = TRUE
   )
 
@@ -244,6 +258,8 @@ for (country in countries) {
     total_budget = NULL,
     date_range = prediction_date_range,
     export = TRUE,
+    plot_folder = prediction_folder,
+    plot_folder_sub = "plot",
     dt_input = PredictedData # Use predicted data for allocation
   )
 
