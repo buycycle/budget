@@ -18,11 +18,11 @@ management_regions <- c(US = "NA",
                  FR= "FRA",
                  DE= "DACH")
 
-gmv_targets <- c(US = 100000,
-                 IT = 150000,
-                 ES= 120000,
-                 FR= 200000,
-                 DE= 200000)
+gmv_targets <- c(US = 200000,
+                 IT = 80000,
+                 ES= 50000,
+                 FR= 100000,
+                 DE= 300000)
 
 # Loop over the countries and map the GMV target
 for (country in countries) {
@@ -45,7 +45,7 @@ for (country in countries) {
   # If no data returned, skip to the next country
   if (nrow(df) == 0) {
       print(paste("Data frame is empty for", country, ". Skipping this country."))
-      next  
+      next
   }
 
   df <- fill_missing_days(df)
@@ -160,7 +160,7 @@ for (country in countries) {
     clusters = TRUE, # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
     plot_pareto = TRUE, # Set to FALSE to deactivate plotting and saving model one-pagers
     plot_folder = "plot/", # path for plots export
-    export = TRUE, # this will create files locally
+    export = FALSE, # this will create files locally
   )
 
 
