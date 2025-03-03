@@ -43,7 +43,7 @@ for (country in countries) {
   gmv_target <- gmv_targets[[country]]
 
   # Construct the command to call the Python script
-  fetch_data <- sprintf("python src/data.py %s %s", country, management_region)
+  fetch_data <- sprintf("python src/data.py %s %s", country, management_region, validation_folder)
   # Execute the command
   system(fetch_data)
 
