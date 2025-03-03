@@ -26,11 +26,23 @@ gmv_targets <- c(US = 200000,
 
 # Loop over the countries and map the GMV target
 for (country in countries) {
+
+    timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")  # Format: YYYYMMDD_HHMMSS
+    validation_folder <- paste0("results/", country, "_validation_", timestamp)
+    prediction_folder <- paste0("results/", country, "_predict_", timestamp)
+    if (!dir.exists(validation_folder)) {
+      dir.create(validation_folder, recursive = TRUE)
+    }
+    if (!dir.exists(prediction_folder)) {
+      dir.create(prediction_folder, recursive = TRUE)
+    }
+
+
   management_region <- management_regions[[country]]
   # Access the GMV target for the current country
   gmv_target <- gmv_targets[[country]]
   # Construct the command to call the Python script
-  fetch_data <- sprintf("python src/data.py %s %s", country, management_region)
+  fetch_data <- sprintf("python src/data.py %s %s", country, management_region, validation_folder)
   # Execute the command
   system(fetch_data)
   # read csv snowflake export
@@ -174,7 +186,8 @@ for (country in countries) {
     channel_constr_multiplier = 3,
     scenario = "max_historical_response",
     export = TRUE,
-    plot_folder = file.path(validation_folder, "plot/") # path for plots export
+    plot_folder = validation_folder,
+    plot_folder_sub = "plot",
   )
   # Predict future values
   PredictedData <- get_future_data(
@@ -213,7 +226,8 @@ for (country in countries) {
     date_range = prediction_date_range,
     export = TRUE,
     dt_input = PredictedData, # Use predicted data for allocation
-    plot_folder = file.path(prediction_folder, "plot/") # path for plots export
+    plot_folder = prediction_folder,
+    plot_folder_sub = "plot",
   )
   # Save prediction results
   saveRDS(FutureAllocatorCollect, file = file.path(prediction_folder, "FutureAllocatorCollect.rds"))

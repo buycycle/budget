@@ -1,7 +1,8 @@
 import sys
+import os
 import pandas as pd
 from buycycle.data import snowflake_sql_db_read
-def fetch_and_save_data(country, management_region, table_name, db_name="DB", output_file="data/data.csv"):
+def fetch_and_save_data(country, management_region, table_name, output_folder, output_file, db_name="DB"):
     query = f"""
     SELECT *
     FROM {table_name}
@@ -11,8 +12,9 @@ def fetch_and_save_data(country, management_region, table_name, db_name="DB", ou
     """
     df = snowflake_sql_db_read(query=query, DB=db_name, driver="snowflake")
     df = df.fillna(0)
-    df.to_csv(output_file, index=False)
-def fetch_and_save_target(management_region, table_name, db_name="DB", output_file="data/data.csv"):
+    output_path = os.path.join(output_folder, output_file)
+    df.to_csv(output_path, index=False)
+def fetch_and_save_target(management_region, table_name, output_folder, output_file, db_name="DB"):
     query = f"""
     SELECT *
     FROM {table_name}
@@ -20,23 +22,28 @@ def fetch_and_save_target(management_region, table_name, db_name="DB", output_fi
     """
     df = snowflake_sql_db_read(query=query, DB=db_name, driver="snowflake")
     df = df.fillna(0)
-    df.to_csv(output_file, index=False)
+    output_path = os.path.join(output_folder, output_file)
+    df.to_csv(output_path, index=False)
 if __name__ == "__main__":
     # Get arguments from command line
     country = sys.argv[1]
     management_region = sys.argv[2]
+    output_folder = sys.argv[3]
     fetch_and_save_data(country=country,
                         management_region=management_region,
-                        table_name="dwh.bl.report_mmm_all",
-                        output_file="data/data.csv")
+                        output_folder=output_folder,
+                        output_file="data.csv",
+                        table_name="dwh.bl.report_mmm_all")
 
 
     fetch_and_save_data(country=country,
                         management_region=management_region,
-                        table_name="dwh.bl.report_mmm_all2",
-                        output_file="data/data_campaigne.csv")
+                        output_folder=output_folder,
+                        output_file="data_campaigne.csv",
+                        table_name="dwh.bl.report_mmm_all2")
 
     fetch_and_save_target(management_region=management_region,
                         db_name="DB_TARGET",
-                        table_name="dwh.il.dim_growth_targets",
-                        output_file="data/data_target.csv")
+                        output_folder=output_folder,
+                        output_file="data_target.csv",
+                        table_name="dwh.il.dim_growth_targets")
