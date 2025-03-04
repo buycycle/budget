@@ -42,11 +42,11 @@ for (country in countries) {
   # Access the GMV target for the current country
   gmv_target <- gmv_targets[[country]]
   # Construct the command to call the Python script
-  fetch_data <- sprintf("python src/data.py %s %s", country, management_region, validation_folder)
+  fetch_data <- sprintf("python src/data.py %s %s %s", country, management_region, validation_folder)
   # Execute the command
   system(fetch_data)
   # read csv snowflake export
-  data_path <- "data/data.csv"
+  data_path <- paste0(validation_folder, "/data.csv")
   df <- read.csv(data_path)
   print("Columns in df:")
   print(names(df))
@@ -56,19 +56,9 @@ for (country in countries) {
       next
   }
   df <- fill_missing_days(df)
-  validation_date_range = c("2024-10-01", "2024-11-01")
+  validation_date_range = c("2025-02-01", "2025-02-28")
   prediction_date_range = c("2025-03-01", "2025-03-31")
-  # Create directories for validation and prediction
-  validation_folder <- paste0("results/", country, "_validation")
-  prediction_folder <- paste0("results/", country, "_predict")
 
-  if (!dir.exists(validation_folder)) {
-    dir.create(validation_folder, recursive = TRUE)
-  }
-
-  if (!dir.exists(prediction_folder)) {
-    dir.create(prediction_folder, recursive = TRUE)
-  }
   # Programmatically define variable types
   # 1. Get the column names for potential independent vars
   column_names <- names(df)
@@ -157,7 +147,7 @@ for (country in countries) {
     clusters = TRUE, # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
     plot_pareto = TRUE, # Set to FALSE to deactivate plotting and saving model one-pagers
     plot_folder = file.path(validation_folder, "plot/"), # path for plots export
-    export = FALSE, # this will create files locally
+    export = TRUE, # this will create files locally
   )
   # Automatically select the model with the best combined score
   pareto_models <- OutputCollect$allSolutions
