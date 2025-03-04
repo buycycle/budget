@@ -91,6 +91,7 @@ assign_hyperparameters <- function(
 get_future_data <- function(
   historical_df,
   prediction_date_range,
+  folder,
   target_gmv = 12000000
 ){
   #' build daily spend for future periods based on historical data and monthly targets.
@@ -176,6 +177,8 @@ get_future_data <- function(
   if (anyNA(historical_df$country)) {
     print("Warning: NA values found in 'country' column.")
   }
+
+  write.csv(historical_df, file.path(folder, "future_data.csv"), row.names = FALSE)
 
   return(historical_df)
 }

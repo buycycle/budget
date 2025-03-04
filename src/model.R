@@ -1,6 +1,14 @@
 library(Robyn)
 
+# add france holidays to dt_prophet_holidays
+data("dt_prophet_holidays", package = "Robyn")
+fr_holidays <- read.csv("input/fr_holidays.csv")
+fr_holidays$ds <- as.Date(fr_holidays$ds)
+dt_prophet_holidays <- rbind(dt_prophet_holidays, fr_holidays)
+
+# add bike race to dt_prophet_holidays, for all countries?
 # Load the reticulate package
+
 library(reticulate)
 
 
@@ -10,7 +18,8 @@ source("src/data.R")
 countries <- list("DE",
                  "US",
                  "IT",
-                 "ES"
+                 "ES",
+                 "FR"
 )
 management_regions <- c(US = "NA",
                  IT = "SEU",
@@ -183,6 +192,7 @@ for (country in countries) {
   PredictedData <- get_future_data(
     historical_df = df,
     prediction_date_range = prediction_date_range,
+    folder = prediction_folder,
     target_gmv = gmv_target
   )
   print("future data is created")
