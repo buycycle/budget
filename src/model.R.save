@@ -1,24 +1,19 @@
 library(Robyn)
 
-# add france holidays to dt_prophet_holidays
-data("dt_prophet_holidays", package = "Robyn")
-fr_holidays <- read.csv("input/fr_holidays.csv")
-fr_holidays$ds <- as.Date(fr_holidays$ds)
-dt_prophet_holidays <- rbind(dt_prophet_holidays, fr_holidays)
-
-# add bike race to dt_prophet_holidays, for all countries?
 # Load the reticulate package
-
 library(reticulate)
 
+# add franch holidays to dt_prophet_holidays
+data("dt_prophet_holidays", package = "Robyn")
+fr_holidays <- read.
 
 source("src/data.R")
 
- countries <- list("DE",
+
+countries <- list("DE",
                  "US",
                  "IT",
-                 "ES",
-                 "FR"
+                 "ES"
 )
 management_regions <- c(US = "NA",
                  IT = "SEU",
@@ -26,11 +21,11 @@ management_regions <- c(US = "NA",
                  FR= "FRA",
                  DE= "DACH")
 
-gmv_targets <- c(US = 2000000,
-                 IT = 800000,
-                 ES= 600000,
-                 FR= 1200000,
-                 DE= 3000000)
+gmv_targets <- c(US = 200000,
+                 IT = 80000,
+                 ES= 50000,
+                 FR= 100000,
+                 DE= 300000)
 
 # Loop over the countries and map the GMV target
 for (country in countries) {
@@ -116,22 +111,14 @@ for (country in countries) {
     prefix_media = c("ga_", "google_", "meta_", "bing_"),
     prefix_tv = "tv_"
   )
-  hyperparameters[["train_size"]] <- c(0.9, 0.95)
   # Print the assigned hyperparameters for debugging
   print("Assigned hyperparameters:")
   for (name in names(hyperparameters)) {
     print(paste(name, ":", paste(hyperparameters[[name]], collapse = ", ")))
   }
-
-  if (country == "FR") {
-    dt_holidays <- fr_holidays
-  } else {
-    dt_holidays <- dt_prophet_holidays
-  }
-
   InputCollect <- robyn_inputs(
     dt_input = df,
-    dt_holidays = dt_holidays,
+    dt_holidays = dt_prophet_holidays,
     date_var = "date",
     dep_var = "gmv", # there should be only one dependent variable
     dep_var_type = "revenue", # "revenue" (roi) or "conversion" (cpa)
@@ -150,9 +137,10 @@ for (country in countries) {
   OutputModel <- robyn_run(
     InputCollect = InputCollect,
     cores = 8, # Number of CPU cores to use
-    iterations = 2500, # Number of iterations for the model
-    trials = 7, # Number of trials for hyperparameter optimization, should be >= 5
-    ts_validation = TRUE
+    iterations = 2000, # Number of iterations for the model
+    trials = 5, # Number of trials for hyperparameter optimization, should be >= 5
+    ts_validation = TRUE,
+    train_size = 0.9
   )
   saveRDS(OutputModel, file = file.path(validation_folder, "OutputModel.rds"))
   OutputCollect <- robyn_outputs(
@@ -161,7 +149,8 @@ for (country in countries) {
     csv_out = "pareto", # "pareto", "all", or NULL (for none)
     clusters = TRUE, # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
     plot_pareto = TRUE, # Set to FALSE to deactivate plotting and saving model one-pagers
-    export = TRUE # this will create files locally
+    plot_folder = file.path(validation_folder, "plot/"), # path for plots export
+    export = TRUE, # this will create files locally
   )
   # Automatically select the model with the best combined score
   pareto_models <- OutputCollect$allSolutions
@@ -197,13 +186,12 @@ for (country in countries) {
   PredictedData <- get_future_data(
     historical_df = df,
     prediction_date_range = prediction_date_range,
-    folder = prediction_folder,
     target_gmv = gmv_target
   )
   print("future data is created")
   InputCollectPredict <- robyn_inputs(
     dt_input = PredictedData,
-    dt_holidays = dt_holidays,
+    dt_holidays = dt_prophet_holidays,
     date_var = "date",
     dep_var = "gmv", # there should be only one dependent variable
     dep_var_type = "revenue", # "revenue" (roi) or "conversion" (cpa)

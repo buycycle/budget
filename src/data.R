@@ -164,7 +164,7 @@ get_future_data <- function(
   }
 
   numeric_cols <- names(prediction_df)[sapply(prediction_df, is.numeric)]
-  prediction_df[, numeric_cols] <- prediction_df[, numeric_cols] * scaler
+  prediction_df[, numeric_cols] <- round(prediction_df[, numeric_cols] * scaler, digits = 2)
 
   for (col in numeric_cols) {
     if (is.integer(historical_df[[col]])) {
