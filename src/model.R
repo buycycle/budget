@@ -1,3 +1,5 @@
+Sys.setenv(RETICULATE_PYTHON = "/home/ubuntu/miniconda3/envs/budget/bin/python")
+
 library(Robyn)
 
 # add france holidays to dt_prophet_holidays
@@ -14,11 +16,11 @@ library(reticulate)
 
 source("src/data.R")
 
- countries <- list("DE",
-                 "US",
-                 "IT",
-                 "ES",
-                 "FR"
+ countries <- list("DE"
+                 #"US",
+                 #"IT",
+                 #"ES",
+                 #"FR"
 )
 management_regions <- c(US = "NA",
                  IT = "SEU",
@@ -30,19 +32,18 @@ gmv_targets <- c(US = 2000000,
                  IT = 800000,
                  ES= 600000,
                  FR= 1200000,
-                 DE= 3000000)
+                 DE= 5000000)
 
 # Loop over the countries and map the GMV target
 for (country in countries) {
 
     timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")  # Format: YYYYMMDD_HHMMSS
-    validation_folder <- paste0("results/", country, "_validation_", timestamp)
-    prediction_folder <- paste0("results/", country, "_predict_", timestamp)
-    if (!dir.exists(validation_folder)) {
-      dir.create(validation_folder, recursive = TRUE)
-    }
-    if (!dir.exists(prediction_folder)) {
-      dir.create(prediction_folder, recursive = TRUE)
+    output_folder <- paste0("results/", country, "_", timestamp, "/")
+    if (!dir.exists(output_folder)) {
+      dir.create(output_folder, recursive = TRUE)
+      dir.create(paste0(output_folder,"validation/pareto/"), recursive = TRUE)
+      dir.create(paste0(output_folder,"validation/model/"), recursive = TRUE)
+      dir.create(paste0(output_folder,"prediction/"), recursive = TRUE)
     }
 
 
@@ -50,11 +51,11 @@ for (country in countries) {
   # Access the GMV target for the current country
   gmv_target <- gmv_targets[[country]]
   # Construct the command to call the Python script
-  fetch_data <- sprintf("python src/data.py %s %s %s", country, management_region, validation_folder)
+  fetch_data <- sprintf("python src/data.py %s %s %s", country, management_region, output_folder)
   # Execute the command
   system(fetch_data)
   # read csv snowflake export
-  data_path <- paste0(validation_folder, "/data.csv")
+  data_path <- paste0(output_folder, "/data.csv")
   df <- read.csv(data_path)
   print("Columns in df:")
   print(names(df))
@@ -64,7 +65,7 @@ for (country in countries) {
       next
   }
   df <- fill_missing_days(df)
-  validation_date_range = c("2025-02-01", "2025-02-28")
+  validation_date_range = c("2024-09-09", "2024-10-08")
   prediction_date_range = c("2025-03-01", "2025-03-31")
 
   # Programmatically define variable types
@@ -87,8 +88,8 @@ for (country in countries) {
   print(paste("factor_vars:", paste(factor_vars, collapse = ", ")))
   # Define hyperparameter for paid_media_vars and organic_vars
   # Calculate shape and scale for digital and TV channels
-  digital_weibull <- approx_weibull(7)
-  organic_weibull <- approx_weibull(7)
+  digital_weibull <- approx_weibull(20)
+  organic_weibull <- approx_weibull(20)
   tv_weibull <- approx_weibull(30)
   # Derived parameter values for digital, TV and organic
   digital_shape <- digital_weibull$shape
@@ -150,19 +151,32 @@ for (country in countries) {
   OutputModel <- robyn_run(
     InputCollect = InputCollect,
     cores = 8, # Number of CPU cores to use
-    iterations = 2500, # Number of iterations for the model
-    trials = 7, # Number of trials for hyperparameter optimization, should be >= 5
+    iterations = 200, # Number of iterations for the model
+    trials = 1, # Number of trials for hyperparameter optimization, should be >= 5
     ts_validation = TRUE
   )
-  saveRDS(OutputModel, file = file.path(validation_folder, "OutputModel.rds"))
   OutputCollect <- robyn_outputs(
     InputCollect, OutputModel,
     # pareto_fronts = "auto",
-    csv_out = "pareto", # "pareto", "all", or NULL (for none)
     clusters = TRUE, # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
-    plot_pareto = TRUE, # Set to FALSE to deactivate plotting and saving model one-pagers
-    export = TRUE # this will create files locally
+    plot_pareto = FALSE, # Set to FALSE to deactivate plotting and saving model one-pagers
+    export = FALSE # this will create files locally
   )
+  robyn_plots(
+  InputCollect,
+  OutputCollect,
+  export = TRUE,
+  plot_folder = paste0(output_folder, "validation/pareto/")
+)
+  # does not work
+#robyn_onepagers(
+#  InputCollect,
+#  OutputCollect,
+#  quiet = FALSE,
+#  export = TRUE,
+#  plot_folder = paste0(output_folder, "validation/pareto/")
+#)
+
   # Automatically select the model with the best combined score
   pareto_models <- OutputCollect$allSolutions
   metrics <- OutputCollect$resultHypParam[OutputCollect$resultHypParam$solID %in% pareto_models, ]
@@ -190,14 +204,13 @@ for (country in countries) {
     channel_constr_multiplier = 3,
     scenario = "max_historical_response",
     export = TRUE,
-    plot_folder = validation_folder,
-    plot_folder_sub = "plot",
+    plot_folder = paste0(output_folder, "validation/model/")
   )
   # Predict future values
   PredictedData <- get_future_data(
     historical_df = df,
     prediction_date_range = prediction_date_range,
-    folder = prediction_folder,
+    folder = output_folder,
     target_gmv = gmv_target
   )
   print("future data is created")
@@ -231,10 +244,9 @@ for (country in countries) {
     date_range = prediction_date_range,
     export = TRUE,
     dt_input = PredictedData, # Use predicted data for allocation
-    plot_folder = prediction_folder,
-    plot_folder_sub = "plot",
+    plot_folder = paste0(output_folder, "prediction/")
   )
   # Save prediction results
-  saveRDS(FutureAllocatorCollect, file = file.path(prediction_folder, "FutureAllocatorCollect.rds"))
+  #saveRDS(FutureAllocatorCollect, file = file.path(prediction_folder, "FutureAllocatorCollect.rds"))
   print(paste("The prediction for the country ", country, "is done."))
 }
