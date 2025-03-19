@@ -46,6 +46,8 @@ roas_targets <- c(US = 1,
                  ES= 0,
                  FR= 0,
                  DE= 3)
+# add bike race to dt_prophet_holidays, for all countries?
+events <- read.csv("input/cycling_events.csv")
 
 # add france holidays to dt_prophet_holidays
 data("dt_prophet_holidays", package = "Robyn")
@@ -150,6 +152,10 @@ for (country in countries) {
   } else {
     dt_holidays <- dt_prophet_holidays
   }
+
+   # replace country for cycling events
+  events$country <- country
+  dt_holidays <- rbind(dt_holidays, events)
 
   InputCollect <- robyn_inputs(
     dt_input = df,
