@@ -9,6 +9,8 @@ fr_holidays$ds <- as.Date(fr_holidays$ds)
 dt_prophet_holidays <- rbind(dt_prophet_holidays, fr_holidays)
 
 # add bike race to dt_prophet_holidays, for all countries?
+events <- read.csv("input/cycling_events.csv")
+
 # Load the reticulate package
 
 library(reticulate)
@@ -129,6 +131,10 @@ for (country in countries) {
   } else {
     dt_holidays <- dt_prophet_holidays
   }
+
+   # replace country for cycling events
+  events$country <- country
+  dt_holidays <- rbind(dt_holidays, events)
 
   InputCollect <- robyn_inputs(
     dt_input = df,
