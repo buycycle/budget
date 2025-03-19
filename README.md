@@ -31,11 +31,10 @@ The project uses a Makefile to automate the setup of a conda environment with bo
    - **Countries**: Specify which countries to include in the analysis.
    - **Date Ranges**: Set `validation_date_range` and `prediction_date_range` to define the periods for model validation and prediction.
    - **Budget and Targets**: Adjust:
-# for max response scenario constraints
-   * `gmv_targets`, used to scale the prediction_date_range from previous month
-   * `max_budgets`, max spend budget for max scenario
-   * `channel_constr_low` and `channel_constr_up`, for max response constrained scenario
-   * `roas_targets`, roas target for efficiency scenario
+     * `gmv_targets`, used to scale the prediction_date_range from the previous month
+     * `max_budgets`, max spend budget for max scenario
+     * `channel_constr_low` and `channel_constr_up`, for max response constrained scenario
+     * `roas_targets`, ROAS target for efficiency scenario
 ## Usage
 1. **Run the Model**:
    Execute the R script to run the model for the specified countries:
@@ -45,12 +44,21 @@ The project uses a Makefile to automate the setup of a conda environment with bo
 2. **View Results**:
    The results, including plots and model outputs, will be saved in the `results` directory, organized by country and timestamp.
 ## Scenarios Calculated
-**Validation Results**: Check the `validation` folder for model validation results, here the model reallocates the historic spend budget.
+**Validation Results**: Check the `validation` folder for model validation results, where the model reallocates the historic spend budget.
 **Prediction Scenarios**: Explore different budget allocation scenarios for the prediction_date_range in the `prediction` folder.
 - **Max Response**: Allocates budget to maximize the response (e.g., sales or conversions) without constraints. This scenario answers the question, "What is the maximum response given a total budget level?"
 - **Max Response Constrained**: Similar to max response but with constraints on channel spend to ensure realistic allocations. It operates as a zero-sum game, where some channels increase while others decrease.
 - **Max Response with Budget**: Allocates a specified budget to maximize response.
 - **Target Efficiency**: This new scenario allows users to set ROAS (Return on Advertising Spend) or CPA (Cost Per Acquisition) targets in the budget allocation. It is particularly useful for growth advertisers who want to know "how much can I spend without budget limit until marketing hits break-even?" The scenario explores how much can be spent until a desired efficiency metric is achieved, without any upper budget limit. This scenario is designed to provide insights into the potential of budget allocation and assist in decision-making.
+## Model Selection from the Pareto Front
+The model is selected from the Pareto front based on a combined score of key metrics:
+- **Metrics Used**: The selection process uses metrics such as normalized root mean square error (nRMSE) and decomposition root sum of squares difference (decomp.rssd).
+- **Combined Score**: A combined score is calculated as the square root of the sum of squares of nRMSE and decomp.rssd. The model with the lowest combined score is selected as the best model.
+- **Selection Logic**: The script automatically selects the model with the best combined score from the Pareto front, ensuring optimal performance.
+## Interpretation of Validation Metrics
+- **R-squared (R²)**: Indicates the proportion of variance in the dependent variable that is predictable from the independent variables. A higher R² value suggests a better fit.
+- **Decomposition RSSD (decomp.rssd)**: Measures the difference between the actual and predicted decompositions. Lower values indicate better model accuracy.
+- **Normalized RMSE (nRMSE)**: A normalized version of RMSE that allows for comparison across different scales. Lower values indicate better model performance.
 ## Prediction Date Range and Budget Scaling
 The prediction date range is used to scale the previous month's budget and other variables to set an initial budget for future predictions. This approach involves:
 - **Scaling**: The budget, along with all spend and context variables from the previous month, is adjusted based on the prediction date range to estimate the budget needed for the future period. This helps in setting a realistic starting point for budget allocation in the prediction scenarios.
