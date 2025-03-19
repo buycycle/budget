@@ -3,9 +3,10 @@ config/config.ini
 
 # data folder
 data/*
+input/*
 # analysis folder
 analysis/*
-plot/*
+results/*
 
 background.md
 
@@ -19,3 +20,5 @@ Robyn_*/
 tests/testthat/outputs
 
 install_nevergrad.R
+
+.DS_Store
