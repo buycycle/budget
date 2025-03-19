@@ -15,8 +15,8 @@ Marketing Mix Modeling (MMM) is a statistical analysis technique used to estimat
 The project uses a Makefile to automate the setup of a conda environment with both R and Python. Follow these steps to set up the environment:
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/marketing-mix-modeling.git
-   cd marketing-mix-modeling
+   git clone https://github.com/buycycle/budget
+   cd budget
    ```
 2. **Set Up the Environment**:
    Use the Makefile to create and configure the conda environment:
@@ -80,4 +80,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - **Pareto Model One-Pager**: There is a known issue where the Pareto model one-pager fails with an "opng device error." This is being investigated, and a fix will be implemented in a future update.
 ## Further Development
 - To enhance the model's predictive accuracy and efficiency by experimenting with various hyperparameter optimization techniques.
-- Write results to S3. 
+- Write results to S3.
