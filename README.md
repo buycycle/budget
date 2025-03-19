@@ -28,10 +28,14 @@ The project uses a Makefile to automate the setup of a conda environment with bo
    - Install the required R packages listed in `requirements_R.R`.
    - Install the required Python packages listed in `requirements_py.txt`.
 3. **Configuration**:
-   Update the `config/config.ini` file to set parameters such as:
    - **Countries**: Specify which countries to include in the analysis.
    - **Date Ranges**: Set `validation_date_range` and `prediction_date_range` to define the periods for model validation and prediction.
-   - **Budget and Targets**: Adjust `gmv_targets`, `max_budgets`, and `roas_targets` to reflect your specific goals and constraints for each country.
+   - **Budget and Targets**: Adjust:
+# for max response scenario constraints
+   * `gmv_targets`, used to scale the prediction_date_range from previous month
+   * `max_budgets`, max spend budget for max scenario
+   * `channel_constr_low` and `channel_constr_up`, for max response constrained scenario
+   * `roas_targets`, roas target for efficiency scenario
 ## Usage
 1. **Run the Model**:
    Execute the R script to run the model for the specified countries:
@@ -40,11 +44,9 @@ The project uses a Makefile to automate the setup of a conda environment with bo
    ```
 2. **View Results**:
    The results, including plots and model outputs, will be saved in the `results` directory, organized by country and timestamp.
-3. **Interpret Outputs**:
-   - **Validation Results**: Check the `validation` folder for model validation results.
-   - **Prediction Scenarios**: Explore different budget allocation scenarios in the `prediction` folder.
 ## Scenarios Calculated
-The model calculates several scenarios to help optimize marketing spend:
+**Validation Results**: Check the `validation` folder for model validation results, here the model reallocates the historic spend budget.
+**Prediction Scenarios**: Explore different budget allocation scenarios for the prediction_date_range in the `prediction` folder.
 - **Max Response**: Allocates budget to maximize the response (e.g., sales or conversions) without constraints. This scenario answers the question, "What is the maximum response given a total budget level?"
 - **Max Response Constrained**: Similar to max response but with constraints on channel spend to ensure realistic allocations. It operates as a zero-sum game, where some channels increase while others decrease.
 - **Max Response with Budget**: Allocates a specified budget to maximize response.
