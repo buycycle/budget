@@ -79,7 +79,5 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Known Bugs
 - **Pareto Model One-Pager**: There is a known issue where the Pareto model one-pager fails with an "opng device error." This is being investigated, and a fix will be implemented in a future update.
 ## Further Development
-As the project evolves, there are several areas for further development and enhancement. One key area is the exploration and implementation of different hyperparameter functions to improve model performance and robustness.
-### Exploring Different Hyperparameter Functions
-1. **Objective**:
-   - To enhance the model's predictive accuracy and efficiency by experimenting with various hyperparameter optimization techniques.
+- To enhance the model's predictive accuracy and efficiency by experimenting with various hyperparameter optimization techniques.
+- Write results to S3. 
