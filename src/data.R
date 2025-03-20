@@ -48,12 +48,6 @@ assign_hyperparameters <- function(
   organic_vars,
   alpha_range,
   gamma_range,
-  digital_shape,
-  digital_scale,
-  organic_shape,
-  organic_scale,
-  tv_shape,
-  tv_scale,
   prefix_media = c("ga_", "google_", "meta_", "bing_"),
   prefix_tv = "tv_"
 ) {
@@ -75,14 +69,14 @@ assign_hyperparameters <- function(
       # Set hyperparameters for TV channels
       hyperparameters[[paste0(media, "_alphas")]] <- alpha_range
       hyperparameters[[paste0(media, "_gammas")]] <- gamma_range
-      hyperparameters[[paste0(media, "_thetas")]] <- c(0, 0.7)
+      hyperparameters[[paste0(media, "_thetas")]] <- c(0.3, 0.8)
     }
   }
   for (organic in organic_vars) {
       # Set hyperparameters for digital channels
       hyperparameters[[paste0(organic, "_alphas")]] <- alpha_range
       hyperparameters[[paste0(organic, "_gammas")]] <- gamma_range
-      hyperparameters[[paste0(organic, "_thetas")]] <- c(0, 0.3)
+      hyperparameters[[paste0(organic, "_thetas")]] <- c(0.1, 0.4)
   }
 
   return(hyperparameters)
