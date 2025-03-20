@@ -109,19 +109,6 @@ for (country in countries) {
   print(paste("context_vars:", paste(context_vars, collapse = ", ")))
   factor_vars <- intersect(c("tv_is_on"), independent_columns) # Ensure tv_is_on is still available
   print(paste("factor_vars:", paste(factor_vars, collapse = ", ")))
-  # Define hyperparameter for paid_media_vars and organic_vars
-  # Calculate shape and scale for digital and TV channels
-  digital_weibull <- approx_weibull(20)
-  organic_weibull <- approx_weibull(20)
-  tv_weibull <- approx_weibull(30)
-  # Derived parameter values for digital, TV and organic
-  digital_shape <- digital_weibull$shape
-  # bing_competitor_cost_scales's hyperparameter must have upper bound <=1
-  digital_scale <- pmin(digital_weibull$scale, 1) # Ensure upper bound of 1
-  organic_shape <- organic_weibull$shape
-  organic_scale <- pmin(organic_weibull$scale, 1)
-  tv_shape <- tv_weibull$shape
-  tv_scale <- tv_weibull$scale
   # Define parameter ranges and fits
   alpha_range <- c(0.5, 3)
   gamma_range <- c(0.3, 1)
@@ -131,16 +118,10 @@ for (country in countries) {
     organic_vars,
     alpha_range,
     gamma_range,
-    digital_shape,
-    digital_scale,
-    organic_shape,
-    organic_scale,
-    tv_shape,
-    tv_scale,
     prefix_media = c("ga_", "google_", "meta_", "bing_"),
     prefix_tv = "tv_"
   )
-  hyperparameters[["train_size"]] <- c(0.9, 0.95)
+  hyperparameters[["train_size"]] <- c(0.8, 0.9)
   # Print the assigned hyperparameters for debugging
   print("Assigned hyperparameters:")
   for (name in names(hyperparameters)) {
