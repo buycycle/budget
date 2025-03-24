@@ -173,14 +173,15 @@ for (country in countries) {
   robyn_plots(
   InputCollect,
   OutputCollect,
-  export = TRUE,
-  plot_folder = paste0(output_folder, "validation/pareto/")
+  export = TRUE
+  #plot_folder = paste0(output_folder, "validation/pareto/")
 )
 robyn_onepagers(
   InputCollect,
   OutputCollect,
   quiet = FALSE,
-  export = TRUE
+# true plotted but then crashed
+  export = FALSE 
 # does not work, copy in folder manually
 #  plot_folder = paste0(output_folder, "validation/pareto/")
 )
