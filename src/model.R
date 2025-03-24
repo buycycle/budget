@@ -8,7 +8,7 @@ library(reticulate)
 
 
 source("src/data.R")
-validation_date_range = c("2024-09-09", "2024-10-08")
+validation_date_range = c("2025-02-01", "2024-02-28")
 prediction_date_range = c("2025-04-01", "2025-04-30")
 
 countries <- list("DE",
@@ -121,7 +121,7 @@ for (country in countries) {
     prefix_media = c("ga_", "google_", "meta_", "bing_"),
     prefix_tv = "tv_"
   )
-  hyperparameters[["train_size"]] <- c(0.8, 0.9)
+  hyperparameters[["train_size"]] <- c(0.9, 0.95)
   # Print the assigned hyperparameters for debugging
   print("Assigned hyperparameters:")
   for (name in names(hyperparameters)) {
@@ -167,8 +167,8 @@ for (country in countries) {
     InputCollect, OutputModel,
     # pareto_fronts = "auto",
     clusters = TRUE, # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
-    plot_pareto = FALSE, # Set to FALSE to deactivate plotting and saving model one-pagers
-    export = FALSE # this will create files locally
+    plot_pareto = TRUE, # Set to FALSE to deactivate plotting and saving model one-pagers
+    export = TRUE # this will create files locally
   )
   robyn_plots(
   InputCollect,
@@ -176,14 +176,14 @@ for (country in countries) {
   export = TRUE,
   plot_folder = paste0(output_folder, "validation/pareto/")
 )
-  # does not work
-#robyn_onepagers(
-#  InputCollect,
-#  OutputCollect,
-#  quiet = FALSE,
-#  export = TRUE,
+robyn_onepagers(
+  InputCollect,
+  OutputCollect,
+  quiet = FALSE,
+  export = TRUE
+# does not work, copy in folder manually
 #  plot_folder = paste0(output_folder, "validation/pareto/")
-#)
+)
 
   # Automatically select the model with the best combined score
   pareto_models <- OutputCollect$allSolutions
