@@ -2,22 +2,17 @@ Sys.setenv(RETICULATE_PYTHON = "/home/ubuntu/miniconda3/envs/budget/bin/python")
 
 library(Robyn)
 
-# add france holidays to dt_prophet_holidays
-data("dt_prophet_holidays", package = "Robyn")
-fr_holidays <- read.csv("input/fr_holidays.csv")
-fr_holidays$ds <- as.Date(fr_holidays$ds)
-dt_prophet_holidays <- rbind(dt_prophet_holidays, fr_holidays)
 
-# add bike race to dt_prophet_holidays, for all countries?
-# Load the reticulate package
 
 library(reticulate)
 
 
 source("src/data.R")
+validation_date_range = c("2025-02-01", "2024-02-28")
+prediction_date_range = c("2025-04-01", "2025-04-30")
 
- countries <- list("DE"
-                 #"US",
+countries <- list("DE",
+                 "US"
                  #"IT",
                  #"ES",
                  #"FR"
@@ -28,11 +23,37 @@ management_regions <- c(US = "NA",
                  FR= "FRA",
                  DE= "DACH")
 
+# for prediction time frame, used to scale previous month for prediciton time frame 
 gmv_targets <- c(US = 2000000,
                  IT = 800000,
                  ES= 600000,
                  FR= 1200000,
                  DE= 5000000)
+# for max response scenario constraints
+channel_constr_low<- 0.2
+channel_constr_up <- 2
+
+# max budget for spend, for max_response_budget
+max_budgets  <- c(US = 200000,
+                 IT = 0,
+                 ES= 0,
+                 FR= 0,
+                 DE= 300000)
+
+# roas target, for efficiency scenario 
+roas_targets <- c(US = 1,
+                 IT = 0,
+                 ES= 0,
+                 FR= 0,
+                 DE= 3)
+# add bike race to dt_prophet_holidays, for all countries?
+events <- read.csv("input/cycling_events.csv")
+
+# add france holidays to dt_prophet_holidays
+data("dt_prophet_holidays", package = "Robyn")
+fr_holidays <- read.csv("input/fr_holidays.csv")
+fr_holidays$ds <- as.Date(fr_holidays$ds)
+dt_prophet_holidays <- rbind(dt_prophet_holidays, fr_holidays)
 
 # Loop over the countries and map the GMV target
 for (country in countries) {
@@ -43,13 +64,17 @@ for (country in countries) {
       dir.create(output_folder, recursive = TRUE)
       dir.create(paste0(output_folder,"validation/pareto/"), recursive = TRUE)
       dir.create(paste0(output_folder,"validation/model/"), recursive = TRUE)
-      dir.create(paste0(output_folder,"prediction/"), recursive = TRUE)
+      dir.create(paste0(output_folder,"prediction/max_response/"), recursive = TRUE)
+      dir.create(paste0(output_folder,"prediction/max_response_constrained/"), recursive = TRUE)
+      dir.create(paste0(output_folder,"prediction/max_response_budget/"), recursive = TRUE)
+      dir.create(paste0(output_folder,"prediction/efficiency/"), recursive = TRUE)
     }
 
-
+  # Assigne country specific values
   management_region <- management_regions[[country]]
-  # Access the GMV target for the current country
   gmv_target <- gmv_targets[[country]]
+  max_budget <- max_budgets[[country]]
+  roas_target <- roas_targets[[country]]
   # Construct the command to call the Python script
   fetch_data <- sprintf("python src/data.py %s %s %s", country, management_region, output_folder)
   # Execute the command
@@ -65,8 +90,6 @@ for (country in countries) {
       next
   }
   df <- fill_missing_days(df)
-  validation_date_range = c("2024-09-09", "2024-10-08")
-  prediction_date_range = c("2025-03-01", "2025-03-31")
 
   # Programmatically define variable types
   # 1. Get the column names for potential independent vars
@@ -86,19 +109,6 @@ for (country in countries) {
   print(paste("context_vars:", paste(context_vars, collapse = ", ")))
   factor_vars <- intersect(c("tv_is_on"), independent_columns) # Ensure tv_is_on is still available
   print(paste("factor_vars:", paste(factor_vars, collapse = ", ")))
-  # Define hyperparameter for paid_media_vars and organic_vars
-  # Calculate shape and scale for digital and TV channels
-  digital_weibull <- approx_weibull(20)
-  organic_weibull <- approx_weibull(20)
-  tv_weibull <- approx_weibull(30)
-  # Derived parameter values for digital, TV and organic
-  digital_shape <- digital_weibull$shape
-  # bing_competitor_cost_scales's hyperparameter must have upper bound <=1
-  digital_scale <- pmin(digital_weibull$scale, 1) # Ensure upper bound of 1
-  organic_shape <- organic_weibull$shape
-  organic_scale <- pmin(organic_weibull$scale, 1)
-  tv_shape <- tv_weibull$shape
-  tv_scale <- tv_weibull$scale
   # Define parameter ranges and fits
   alpha_range <- c(0.5, 3)
   gamma_range <- c(0.3, 1)
@@ -108,12 +118,6 @@ for (country in countries) {
     organic_vars,
     alpha_range,
     gamma_range,
-    digital_shape,
-    digital_scale,
-    organic_shape,
-    organic_scale,
-    tv_shape,
-    tv_scale,
     prefix_media = c("ga_", "google_", "meta_", "bing_"),
     prefix_tv = "tv_"
   )
@@ -129,6 +133,10 @@ for (country in countries) {
   } else {
     dt_holidays <- dt_prophet_holidays
   }
+
+   # replace country for cycling events
+  events$country <- country
+  dt_holidays <- rbind(dt_holidays, events)
 
   InputCollect <- robyn_inputs(
     dt_input = df,
@@ -151,31 +159,32 @@ for (country in countries) {
   OutputModel <- robyn_run(
     InputCollect = InputCollect,
     cores = 8, # Number of CPU cores to use
-    iterations = 200, # Number of iterations for the model
-    trials = 1, # Number of trials for hyperparameter optimization, should be >= 5
+    iterations = 2000, # Number of iterations for the model
+    trials = 5, # Number of trials for hyperparameter optimization, should be >= 5
     ts_validation = TRUE
   )
   OutputCollect <- robyn_outputs(
     InputCollect, OutputModel,
     # pareto_fronts = "auto",
     clusters = TRUE, # Set to TRUE to cluster similar models by ROAS. See ?robyn_clusters
-    plot_pareto = FALSE, # Set to FALSE to deactivate plotting and saving model one-pagers
-    export = FALSE # this will create files locally
+    plot_pareto = TRUE, # Set to FALSE to deactivate plotting and saving model one-pagers
+    export = TRUE # this will create files locally
   )
   robyn_plots(
   InputCollect,
   OutputCollect,
-  export = TRUE,
-  plot_folder = paste0(output_folder, "validation/pareto/")
+  export = TRUE
+  #plot_folder = paste0(output_folder, "validation/pareto/")
 )
-  # does not work
-#robyn_onepagers(
-#  InputCollect,
-#  OutputCollect,
-#  quiet = FALSE,
-#  export = TRUE,
+robyn_onepagers(
+  InputCollect,
+  OutputCollect,
+  quiet = FALSE,
+# true plotted but then crashed
+  export = FALSE 
+# does not work, copy in folder manually
 #  plot_folder = paste0(output_folder, "validation/pareto/")
-#)
+)
 
   # Automatically select the model with the best combined score
   pareto_models <- OutputCollect$allSolutions
@@ -238,15 +247,52 @@ for (country in countries) {
     OutputCollect = OutputCollect,
     select_model = select_model,
     scenario = "max_response",
-    channel_constr_low = 0.5,
-    channel_constr_up = 1.5,
     total_budget = NULL,
     date_range = prediction_date_range,
     export = TRUE,
     dt_input = PredictedData, # Use predicted data for allocation
-    plot_folder = paste0(output_folder, "prediction/")
+    plot_folder = paste0(output_folder, "prediction/max_response/")
   )
   # Save prediction results
   #saveRDS(FutureAllocatorCollect, file = file.path(prediction_folder, "FutureAllocatorCollect.rds"))
-  print(paste("The prediction for the country ", country, "is done."))
+  print(paste("Max response scenario prediction for the country ", country, "is done."))
+  FutureAllocatorCollect <- robyn_allocator(
+    InputCollect = InputCollectPredict,
+    OutputCollect = OutputCollect,
+    select_model = select_model,
+    scenario = "max_response",
+    channel_constr_low = channel_constr_low,
+    channel_constr_up = channel_constr_up,
+    total_budget = NULL,
+    date_range = prediction_date_range,
+    export = TRUE,
+    dt_input = PredictedData, # Use predicted data for allocation
+    plot_folder = paste0(output_folder, "prediction/max_response_constrained/")
+  )
+  print(paste("Max response constrained scenario prediction for the country ", country, "is done."))
+  FutureAllocatorCollect <- robyn_allocator(
+    InputCollect = InputCollectPredict,
+    OutputCollect = OutputCollect,
+    select_model = select_model,
+    scenario = "max_response",
+    total_budget = max_budget,
+    date_range = prediction_date_range,
+    export = TRUE,
+    dt_input = PredictedData, # Use predicted data for allocation
+    plot_folder = paste0(output_folder, "prediction/max_response_budget/")
+  )
+  print(paste("Max response budget scenario prediction for the country ", country, "is done."))
+  FutureAllocatorCollect <- robyn_allocator(
+    InputCollect = InputCollectPredict,
+    OutputCollect = OutputCollect,
+    select_model = select_model,
+    scenario = "target_efficiency",
+    target_value = roas_target, # Customize target ROAS or CPA value
+    total_budget = NULL,
+    date_range = prediction_date_range,
+    export = TRUE,
+    dt_input = PredictedData, # Use predicted data for allocation
+    plot_folder = paste0(output_folder, "prediction/efficiency/")
+  )
+  print(paste("Efficiency scenario prediction for the country ", country, "is done."))
 }
